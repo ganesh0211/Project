@@ -11,6 +11,7 @@
     <modules>
         <module>Platform</module>
         <module>model</module>
+        <module>UserManagement</module>
     </modules>
     <build>
         <extensions>
