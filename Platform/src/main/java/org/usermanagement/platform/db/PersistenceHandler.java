@@ -29,7 +29,7 @@ public class PersistenceHandler {
         HibernateUtils hibernateUtils = new HibernateUtils();//(HibernateUtils)applicationContextProvider.getApplicationContext().getBean("hibernateUtils");
         Session session = hibernateUtils.getSession();
         Transaction transaction = session.beginTransaction();
-        session.save(obj);
+        session.merge(obj);
         transaction.commit();
         session.close();
     }
