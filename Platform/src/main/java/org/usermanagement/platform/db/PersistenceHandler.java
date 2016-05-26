@@ -1,8 +1,13 @@
 package org.usermanagement.platform.db;
 
+import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.usermanagement.platform.util.ApplicationContextProvider;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import java.util.List;
 
 
 /**
@@ -12,25 +17,47 @@ import org.hibernate.Transaction;
  * Time: 3:35 PM
  * To change this template use File | Settings | File Templates.
  */
+@Repository
 public class PersistenceHandler {
-    private static PersistenceHandler ourInstance = new PersistenceHandler();
 
+    @Autowired
+    private HibernateUtils hibernateUtils;
 
-    public static PersistenceHandler getInstance() {
-        return ourInstance;
+    public void setHibernateUtils(HibernateUtils hibernateUtil){
+        this.hibernateUtils = hibernateUtil;
     }
 
     private PersistenceHandler() {
 
     }
-    public void saveObject(Object obj){
-        ApplicationContextProvider applicationContextProvider = new ApplicationContextProvider();
-        System.out.println((applicationContextProvider.getApplicationContext()==null)+" APP NULL");
-        HibernateUtils hibernateUtils = new HibernateUtils();//(HibernateUtils)applicationContextProvider.getApplicationContext().getBean("hibernateUtils");
+
+    public Object saveObject(Object obj){
         Session session = hibernateUtils.getSession();
         Transaction transaction = session.beginTransaction();
-        session.merge(obj);
+        obj = session.merge(obj);
         transaction.commit();
         session.close();
+        return obj;
+    }
+
+    public Object getObjectById(Class entity, long id){
+        Session session = null;
+        try{
+            session = hibernateUtils.getSession();
+            Query query = session.createQuery("from " + entity.getName() + " as entity where entity.id =" + id);
+            List<Object> objects = query.list();
+            if(objects != null && !objects.isEmpty()) {
+                return objects.get(0);
+            }
+        }catch (Exception e) {
+            //TO BE HANDLED
+            e.printStackTrace();
+        }finally {
+            if(session != null) {
+                session.flush();
+                session.close();
+            }
+        }
+        return null;
     }
 }

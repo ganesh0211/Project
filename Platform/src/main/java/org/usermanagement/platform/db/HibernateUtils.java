@@ -3,6 +3,9 @@ package org.usermanagement.platform.db;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,28 +17,23 @@ import java.util.Map;
  * Time: 2:23 PM
  * To change this template use File | Settings | File Templates.
  */
+@Repository
 public class HibernateUtils {
-    private static Map<String,SessionFactory> sessionFactoryMap = new HashMap<String, SessionFactory>();
-    private static SessionFactory sessionFactory;
-    private static final String DEFAULT = "DEFAULT";
 
-    public void init(String context){
-        if(context == null){
-            sessionFactory = new Configuration().configure().buildSessionFactory();
-            context = DEFAULT;
-        }else{
-            sessionFactory = new Configuration().configure(context).buildSessionFactory();
-        }
-        sessionFactoryMap.put(context,sessionFactory);
-    }
-    public void init(){
-       init(null);
+    @Autowired
+    private Map<String,SessionFactory> sessionFactoryMap = new HashMap<String, SessionFactory>();
+    private static final String DEFAULT = "mySqlSessionFactory";
+
+    public void setSessionFactory(Map<String,SessionFactory> sessionFactoryMap){
+        sessionFactoryMap = sessionFactoryMap;
     }
 
     public Session getSession(String context){
         return sessionFactoryMap.get(context).openSession();
     }
+
     public Session getSession(){
+        System.out.println(sessionFactoryMap);
         return sessionFactoryMap.get(DEFAULT).openSession();
     }
 

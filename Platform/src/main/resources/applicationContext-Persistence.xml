@@ -2,28 +2,56 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd" >
 
     <bean id="applicationContextProvider" class ="org.usermanagement.platform.util.ApplicationContextProvider" />
 
-    <bean id="hibernateUtils" class="org.usermanagement.platform.db.HibernateUtils"
-          init-method="init">
-    </bean>
-
-    <bean id="persistenceHandler" class="org.usermanagement.platform.db.PersistenceHandler"
-          depends-on="hibernateUtils">
-    </bean>
-
-
+    <!-- beans with p namespace -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
-          destroy-method="close">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-        <property name="url" value="jdbc:mysql://localhost:3306/mySql" />
-        <property name="username" value="test" />
-        <property name="password" value="test123" />
+          destroy-method="close"
+          p:driverClassName="com.mysql.jdbc.Driver"
+          p:url="jdbc:mysql://localhost/mysql"
+          p:username="root"
+          p:password="root"
+            />
+
+    <bean id="mySqlSessionFactory"
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" p:dataSource-ref="dataSource">
+        <property name="annotatedClasses">
+            <list>
+                <value>org.usermanagement.model.User</value>
+                <value>org.usermanagement.model.Role</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hbm2ddl.auto">create</prop>
+            </props>
+        </property>
     </bean>
+
+    <context:component-scan base-package="org.usermanagement.platform.db" />
+
+    <!-- Commented because of annotation @Repository Usage
+
+    <bean id="hibernateUtils" class="org.usermanagement.platform.db.HibernateUtils" >
+        <property name="sessionFactory" >
+            <map>
+                <entry key="DEFAULT" value-ref="mySqlSessionFactory"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="persistenceHandler" class="org.usermanagement.platform.db.PersistenceHandler" p:hibernateUtils-ref= "hibernateUtils">
+    </bean> -->
 
 </beans>

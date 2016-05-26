@@ -60,6 +60,14 @@ public class User {
         this.contactEmail = contactEmail;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", contactEmail='" + contactEmail + '\'' +
+                ", contactNumber='" + contactNumber + '\'' +
+                '}';
+    }
 }
