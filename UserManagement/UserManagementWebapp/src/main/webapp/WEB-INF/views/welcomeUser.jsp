@@ -11,10 +11,23 @@
     <title>User Management</title>
 </head>
 <body>
-    Username : ${username}
+    <table>
+        <tr>
+            <td>
+                <div><%=request.getAttribute("userName")%></div>
+            </td>
+        </tr>
+        <tr>
+           <td>
+               <div></div>
+           </td>
+        </tr>
+
+    </table>
+    Username :
     <br />
-    Email : ${email}
+    Email : <%=request.getAttribute("email")%>
     <br />
-    Number : ${contactNumber}
+    Number : <%=request.getAttribute("contactNumber")%>
 </body>
 </html>

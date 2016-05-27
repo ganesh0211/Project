@@ -15,18 +15,13 @@ import javax.persistence.*;
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    private String firstName;
+    private String lastName;
+    private String middleName;
     private String username;
     private String password;
     private String contactEmail;
     private String contactNumber;
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
 
     public long getId() {
         return id;
@@ -34,6 +29,30 @@ public class User {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
     }
 
     public String getUsername() {
@@ -60,10 +79,21 @@ public class User {
         this.contactEmail = contactEmail;
     }
 
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", middleName='" + middleName + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", contactEmail='" + contactEmail + '\'' +

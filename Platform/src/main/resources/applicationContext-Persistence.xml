@@ -10,7 +10,6 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd" >
 
-    <bean id="applicationContextProvider" class ="org.usermanagement.platform.util.ApplicationContextProvider" />
 
     <!-- beans with p namespace -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
@@ -51,7 +50,7 @@
         </property>
     </bean>
 
-    <bean id="persistenceHandler" class="org.usermanagement.platform.db.PersistenceHandler" p:hibernateUtils-ref= "hibernateUtils">
+    <bean id="persistenceHandler" class="org.usermanagement.platform.db.PersistenceHandlerImpl" p:hibernateUtils-ref= "hibernateUtils">
     </bean> -->
 
 </beans>

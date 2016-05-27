@@ -1,10 +1,13 @@
 package org.usermanagement.core.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.usermanagement.core.component.UserManager;
@@ -41,7 +44,7 @@ public class UserController {
         return "Saved : "+user.toString();
     }
 
-    @RequestMapping("/getUserDetails")
+    @RequestMapping(value = {"/getUserDetails"},method = RequestMethod.GET)
     public String getUserDetails(@RequestParam("id") long id,ModelMap modelMap){
         User user = userManager.getUserById(id);
         modelMap.addAttribute("userName",user.getUsername());
