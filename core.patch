@@ -1,0 +1,1482 @@
+Index: Platform/src/main/java/org/usermanagement/core/model/impl/SimpleImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/model/impl/SimpleImpl.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/model/impl/SimpleImpl.java	(revision )
+@@ -0,0 +1,32 @@
++package org.usermanagement.core.model.impl;
++
++import org.usermanagement.core.model.Simple;
++
++import javax.persistence.GeneratedValue;
++import javax.persistence.GenerationType;
++import javax.persistence.Id;
++import javax.persistence.MappedSuperclass;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:05 AM
++ * To change this template use File | Settings | File Templates.
++ */
++@MappedSuperclass
++public class SimpleImpl implements Simple {
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private long id;
++
++    public long getId() {
++        return id;
++    }
++
++    public long setId(long id) {
++        this.id = id;
++        return this.id;
++    }
++
++}
+Index: Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandlerImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandlerImpl.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandlerImpl.java	(revision )
+@@ -5,6 +5,11 @@
+ import org.springframework.stereotype.Repository;
+ import org.hibernate.Session;
+ import org.hibernate.Transaction;
++import org.usermanagement.core.exception.BaseException;
++import org.usermanagement.core.exception.type.Database;
++import org.usermanagement.core.exception.type.Exceptions;
++import org.usermanagement.core.model.Core;
++import org.usermanagement.core.model.Observer;
+ 
+ import java.util.List;
+ 
+@@ -17,7 +22,7 @@
+  * To change this template use File | Settings | File Templates.
+  */
+ @Repository
+-public class PersistenceHandlerImpl implements PersistenceHandler{
++public class PersistenceHandlerImpl implements PersistenceHandler {
+ 
+     @Autowired
+     private HibernateUtils hibernateUtils;
+@@ -26,29 +31,71 @@
+ 
+     }
+ 
+-    public Object saveObject(Object obj){
+-        Session session = hibernateUtils.getSession();
++    public Object saveObject(Object obj) throws BaseException{
++        Session session = null;
++        try {
++            session = hibernateUtils.getSession();
+-        Transaction transaction = session.beginTransaction();
++            Transaction transaction = session.beginTransaction();
++            preSaveUpdate(obj);
+-        obj = session.merge(obj);
++            obj = session.merge(obj);
++            session.flush();
+-        transaction.commit();
++            transaction.commit();
++            postSaveUpdate(obj);
++        } catch (Exception e) {
++            throw new BaseException(Database.SAVE_FAILED);
++        } finally {
++            if (session != null) {
+-        session.close();
++                session.close();
++            }
++        }
+         return obj;
+     }
+ 
+-    public Object getObjectById(Class entity, long id){
++    private void preSaveUpdate(Object object) {
++        if (object instanceof Core) {
++            ((Core) object).updateVersion();
++        }
++    }
++
++    private void postSaveUpdate(Object object) {
++        if (object instanceof Observer) {
++            ((Observer) object).notifyUpdate();
++        }
++    }
++
++
++    @Override
++    public Object deleteObject(Object object) throws BaseException {
+         Session session = null;
+-        try{
++        try {
+             session = hibernateUtils.getSession();
++            Transaction transaction = session.beginTransaction();
++            session.delete(object);
++            session.flush();
++            transaction.commit();
++        } catch (Exception e) {
++            throw new BaseException(Database.DELETE_FAILED);
++        } finally {
++            if (session != null) {
++                session.close();
++            }
++        }
++        return object;
++    }
++
++    public Object getObjectById(Class entity, long id) throws BaseException{
++        Session session = null;
++        try {
++            session = hibernateUtils.getSession();
+             Query query = session.createQuery("from " + entity.getName() + " as entity where entity.id =" + id);
+             List<Object> objects = query.list();
+-            if(objects != null && !objects.isEmpty()) {
++            if (objects != null && !objects.isEmpty()) {
+                 return objects.get(0);
+             }
+-        }catch (Exception e) {
++        } catch (Exception e) {
+-            //TO BE HANDLED
+-            e.printStackTrace();
++            throw new BaseException(Database.SEARCH_FAILED);
+-        }finally {
++        } finally {
+-            if(session != null) {
++            if (session != null) {
+                 session.flush();
+                 session.close();
+             }
+@@ -56,21 +103,19 @@
+         return null;
+     }
+ 
+-    public List<?> getObjectByProperty(Class entity, String property, String value){
++    public List<?> getObjectByProperty(Class entity, String property, String value) throws BaseException{
+         Session session = null;
+-        try{
++        try {
+             session = hibernateUtils.getSession();
+-            Query query = session.createQuery("from " + entity.getName() + " as entity where entity."+property+" = '" + value + "'");
++            Query query = session.createQuery("from " + entity.getName() + " as entity where entity." + property + " = '" + value + "'");
+             return query.list();
+-        }catch (Exception e) {
++        } catch (Exception e) {
+-            //TO BE HANDLED
+-            e.printStackTrace();
++            throw new BaseException(Database.SEARCH_FAILED);
+-        }finally {
++        } finally {
+-            if(session != null) {
++            if (session != null) {
+                 session.flush();
+                 session.close();
+             }
+         }
+-        return null;
+     }
+ }
+Index: Platform/src/main/java/org/usermanagement/core/exception/type/Core.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/type/Core.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/type/Core.java	(revision )
+@@ -0,0 +1,37 @@
++package org.usermanagement.core.exception.type;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:30 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public enum Core implements Exceptions {
++
++    NO_DATA_FOUND("No data found.",Type.MINOR);
++
++    private final String message;
++    private final Type type;
++
++    private Core(final String message,final Type type){
++        this.message = message;
++        this.type = type;
++    }
++
++    public String getMessage() {
++        return message;
++    }
++
++    public Type getType() {
++        return type;
++    }
++
++    @Override
++    public String toString() {
++        return "Core{" +
++                "message='" + message + '\'' +
++                ", type=" + type +
++                "} " + super.toString();
++    }
++}
+Index: design.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- design.txt	(revision )
++++ design.txt	(revision )
+@@ -0,0 +1,1 @@
++Core
+\ No newline at end of file
+Index: UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/controller/UserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/controller/UserController.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/controller/UserController.java	(revision )
+@@ -11,6 +11,8 @@
+ import org.springframework.web.bind.annotation.RequestParam;
+ import org.springframework.web.bind.annotation.ResponseBody;
+ import org.usermanagement.core.component.UserManager;
++import org.usermanagement.core.exception.ApplicationException;
++import org.usermanagement.core.exception.BusinessException;
+ import org.usermanagement.model.User;
+ 
+ /**
+@@ -28,28 +30,38 @@
+ 
+     @RequestMapping("/getRootUser")
+     @ResponseBody
+-    public String getRootUserDetails(){
++    public String getRootUserDetails() {
+         return "Welcome Admin !!!!";
+     }
+ 
+     @RequestMapping("/saveDummyRootUser")
+     @ResponseBody
+-    public String saveDummyRootUser(){
++    public String saveDummyRootUser() {
+         User user = new User();
+         user.setUsername("ROOT");
+         user.setPassword("ROOT");
+         user.setContactEmail("Root@usermanagement.org");
+         user.setContactNumber("9876543211");
++        try {
+-        user = userManager.saveUserManager(user);
++            user = userManager.saveUserManager(user);
++        } catch (ApplicationException applicationException) {
++             return applicationException.getExceptions().toString();
++        }
+-        return "Saved : "+user.toString();
++        return "Saved : " + user.toString();
+     }
+ 
+-    @RequestMapping(value = {"/getUserDetails"},method = RequestMethod.GET)
++    @RequestMapping(value = {"/getUserDetails"}, method = RequestMethod.GET)
+-    public String getUserDetails(@RequestParam("id") long id,ModelMap modelMap){
++    public String getUserDetails(@RequestParam("id") long id, ModelMap modelMap) {
++        try {
+-        User user = userManager.getUserById(id);
++            User user = userManager.getUserById(id);
+-        modelMap.addAttribute("userName",user.getUsername());
++            modelMap.addAttribute("userName", user.getUsername());
+-        modelMap.addAttribute("email",user.getContactEmail());
++            modelMap.addAttribute("email", user.getContactEmail());
+-        modelMap.addAttribute("contactNumber",user.getContactNumber());
++            modelMap.addAttribute("contactNumber", user.getContactNumber());
++        } catch (ApplicationException applicationException) {
++            return applicationException.getExceptions().toString();
++        } catch (BusinessException businessException) {
++            return businessException.getExceptions().toString();
++        }
+         return "welcomeUser";
+ 
+     }
+Index: Platform/src/main/java/org/usermanagement/core/exception/BaseException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/BaseException.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/BaseException.java	(revision )
+@@ -0,0 +1,25 @@
++package org.usermanagement.core.exception;
++
++import org.usermanagement.core.exception.type.Exceptions;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:20 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public class BaseException extends Exception {
++    /**
++     * Exception
++     */
++    private Exceptions exceptions;
++
++    public BaseException(final Exceptions exceptions){
++         this.exceptions = exceptions;
++    }
++
++    public Exceptions getExceptions() {
++        return exceptions;
++    }
++}
+Index: model/src/main/java/org/usermanagement/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- model/src/main/java/org/usermanagement/model/User.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ model/src/main/java/org/usermanagement/model/User.java	(revision )
+@@ -1,6 +1,8 @@
+ package org.usermanagement.model;
+ 
+ 
++import org.usermanagement.core.model.impl.ObserverCoreImpl;
++
+ import javax.persistence.*;
+ 
+ /**
+@@ -11,10 +13,9 @@
+  * To change this template use File | Settings | File Templates.
+  */
+ @Entity
+-@Table(name = "Users")
+-public class User {
+-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+-    private long id;
++@Table(name = "User")
++public class User extends ObserverCoreImpl {
++
+     private String firstName;
+     private String lastName;
+     private String middleName;
+@@ -22,82 +23,128 @@
+     private String password;
+     private String contactEmail;
+     private String contactNumber;
++    @ManyToOne
++    private Role role;
+ 
+-    public long getId() {
+-        return id;
+-    }
+-
+-    public void setId(long id) {
+-        this.id = id;
+-    }
+-
+     public String getFirstName() {
+         return firstName;
+     }
+ 
+-    public void setFirstName(String firstName) {
++    public String setFirstName(String firstName) {
+         this.firstName = firstName;
++        return this.firstName;
+     }
+ 
+     public String getLastName() {
+         return lastName;
+     }
+ 
+-    public void setLastName(String lastName) {
++    public String setLastName(String lastName) {
+         this.lastName = lastName;
++        return this.lastName;
+     }
+ 
+     public String getMiddleName() {
+         return middleName;
+     }
+ 
+-    public void setMiddleName(String middleName) {
++    public String setMiddleName(String middleName) {
+         this.middleName = middleName;
++        return this.middleName;
+     }
+ 
+     public String getUsername() {
+         return username;
+     }
+ 
+-    public void setUsername(String username) {
++    public String setUsername(String username) {
+         this.username = username;
++        return username;
+     }
+ 
+     public String getPassword() {
+         return password;
+     }
+ 
+-    public void setPassword(String password) {
++    public String setPassword(String password) {
+         this.password = password;
++        return this.password;
+     }
+ 
+     public String getContactEmail() {
+         return contactEmail;
+     }
+ 
+-    public void setContactEmail(String contactEmail) {
++    public String setContactEmail(String contactEmail) {
+         this.contactEmail = contactEmail;
++        return this.contactEmail;
+     }
+ 
+     public String getContactNumber() {
+         return contactNumber;
+     }
+ 
+-    public void setContactNumber(String contactNumber) {
++    public String setContactNumber(String contactNumber) {
+         this.contactNumber = contactNumber;
++        return this.contactNumber;
+     }
+ 
++    public Role getRole() {
++        return role;
++    }
++
++    public Role setRole(Role role) {
++        this.role = role;
++        return this.role;
++    }
++
+     @Override
++    public void notifyUpdate() {
++        //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (!(o instanceof User)) return false;
++        if (!super.equals(o)) return false;
++
++        User user = (User) o;
++
++        if (!contactEmail.equals(user.contactEmail)) return false;
++        if (!contactNumber.equals(user.contactNumber)) return false;
++        if (!firstName.equals(user.firstName)) return false;
++        if (!lastName.equals(user.lastName)) return false;
++        if (!middleName.equals(user.middleName)) return false;
++        if (!password.equals(user.password)) return false;
++        if (!username.equals(user.username)) return false;
++
++        return true;
++    }
++
++    @Override
++    public int hashCode() {
++        int result = super.hashCode();
++        result = (firstName != null) ? 31 * result + firstName.hashCode() : result;
++        result = (lastName != null) ? 31 * result + lastName.hashCode() : result;
++        result = (middleName != null) ? 31 * result + middleName.hashCode() : result;
++        result = (username != null) ? 31 * result + username.hashCode() : result;
++        result = (password != null) ? 31 * result + password.hashCode() : result;
++        result = (contactEmail != null) ? 31 * result + contactEmail.hashCode() : result;
++        result = (contactNumber != null) ? 31 * result + contactNumber.hashCode() : result;
++        return result;
++    }
++
++    @Override
+     public String toString() {
+         return "User{" +
+-                "id=" + id +
++                "username='" + username + '\'' +
+                 ", firstName='" + firstName + '\'' +
+                 ", lastName='" + lastName + '\'' +
+                 ", middleName='" + middleName + '\'' +
+-                ", username='" + username + '\'' +
+                 ", password='" + password + '\'' +
+                 ", contactEmail='" + contactEmail + '\'' +
+                 ", contactNumber='" + contactNumber + '\'' +
+-                '}';
++                "} " + super.toString();
+     }
+ }
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ pom.xml	(revision )
+@@ -14,6 +14,7 @@
+         <module>UserManagement</module>
+     </modules>
+     <build>
++        <defaultGoal>install</defaultGoal>
+         <extensions>
+             <extension>
+                 <groupId>org.apache.maven.wagon</groupId>
+@@ -25,10 +26,10 @@
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+-                <version>2.1</version>
++                <version>2.3.2</version>
+                 <configuration>
+-                    <source>1.8</source>
+-                    <target>1.8</target>
++                    <source>1.6</source>
++                    <target>1.6</target>
+                 </configuration>
+             </plugin>
+         </plugins>
+\ No newline at end of file
+Index: Platform/src/main/java/org/usermanagement/core/exception/type/Type.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/type/Type.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/type/Type.java	(revision )
+@@ -0,0 +1,14 @@
++package org.usermanagement.core.exception.type;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:44 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public enum Type{
++    CRITICAL,
++    MAJOR,
++    MINOR
++}
+Index: Platform/src/main/java/org/usermanagement/core/exception/BusinessException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/BusinessException.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/BusinessException.java	(revision )
+@@ -0,0 +1,17 @@
++package org.usermanagement.core.exception;
++
++import org.usermanagement.core.exception.type.Exceptions;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:20 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public class BusinessException extends BaseException {
++
++    public BusinessException(Exceptions exceptions) {
++        super(exceptions);
++    }
++}
+Index: Platform/src/main/java/org/usermanagement/core/exception/type/Exceptions.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/type/Exceptions.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/type/Exceptions.java	(revision )
+@@ -0,0 +1,11 @@
++package org.usermanagement.core.exception.type;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:36 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public interface Exceptions {
++}
+Index: Platform/src/main/resources/SchemaCreator.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/resources/SchemaCreator.sql	(revision )
++++ Platform/src/main/resources/SchemaCreator.sql	(revision )
+@@ -0,0 +1,2 @@
++
++CREATE SCHEMA USERMANAGER;
+\ No newline at end of file
+Index: UserManagement/UserManagementWebapp/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- UserManagement/UserManagementWebapp/pom.xml	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ UserManagement/UserManagementWebapp/pom.xml	(revision )
+@@ -29,6 +29,6 @@
+         </dependency>
+     </dependencies>
+     <build>
+-        <finalName>UserManagementWebapp</finalName>
++        <finalName>UserManagement</finalName>
+     </build>
+ </project>
+Index: Platform/src/main/java/org/usermanagement/core/model/impl/ObserverCoreImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/model/impl/ObserverCoreImpl.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/model/impl/ObserverCoreImpl.java	(revision )
+@@ -0,0 +1,154 @@
++package org.usermanagement.core.model.impl;
++
++import org.usermanagement.core.model.Core;
++import org.usermanagement.core.model.Observer;
++import org.usermanagement.core.util.DateUtil;
++import org.usermanagement.core.util.impl.DateUtilImpl;
++
++import javax.persistence.GeneratedValue;
++import javax.persistence.GenerationType;
++import javax.persistence.Id;
++import javax.persistence.MappedSuperclass;
++import java.util.Date;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 8/4/17
++ * Time: 11:04 PM
++ * To change this template use File | Settings | File Templates.
++ */
++@MappedSuperclass
++public abstract class ObserverCoreImpl implements Core, Observer {
++    /**
++     * Date Util for data management
++     */
++    private static DateUtil dateUtil = new DateUtilImpl();
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private long id;
++    private String name;
++    private String description;
++    private Date creationDate;
++    private Date modifiedDate;
++    private boolean enabled;
++    private long version;
++
++    public long getId() {
++        return id;
++    }
++
++    public long setId(long id) {
++        this.id = id;
++        return this.id;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public String setName(String name) {
++        this.name = name;
++        return this.name;
++    }
++
++    public String getDescription() {
++        return description;
++    }
++
++    public String setDescription(String description) {
++        this.description = description;
++        return this.description;
++    }
++
++    public Date getCreationDate() {
++        return creationDate;
++    }
++
++    public Date setCreationDate(Date creationDate) {
++        this.creationDate = creationDate;
++        return this.creationDate;
++    }
++
++    public Date getModifiedDate() {
++        return modifiedDate;
++    }
++
++    public Date setModifiedDate(Date modifiedDate) {
++        this.modifiedDate = modifiedDate;
++        return this.modifiedDate;
++    }
++
++    public boolean isEnabled() {
++        return enabled;
++    }
++
++    public boolean setEnabled(boolean enabled) {
++        this.enabled = enabled;
++        return this.enabled;
++    }
++
++    public long getVersion() {
++        return version;
++    }
++
++    public long setVersion(long version) {
++        this.version = version;
++        return this.version;
++    }
++
++    @Override
++    public void updateVersion() {
++        if(this.creationDate == null){
++            this.creationDate = dateUtil.getCurrentUTCDate();
++        }
++        this.modifiedDate = dateUtil.getCurrentUTCDate();
++        this.version ++;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (!(o instanceof ObserverCoreImpl)) return false;
++
++        ObserverCoreImpl that = (ObserverCoreImpl) o;
++
++        if (enabled != that.enabled) return false;
++        if (id != that.id) return false;
++        if (version != that.version) return false;
++        if (creationDate != null && !creationDate.equals(that.creationDate)) return false;
++        if (description !=null && !description.equals(that.description)) return false;
++        if (modifiedDate != null && !modifiedDate.equals(that.modifiedDate)) return false;
++        if (name != null && !name.equals(that.name)) return false;
++
++        return true;
++    }
++
++    @Override
++    public int hashCode() {
++        int result = (int) (id ^ (id >>> 32));
++        result = (name != null) ? 31 * result + name.hashCode() : result;
++        result = (description != null) ? 31 * result + description.hashCode() : result;
++        result = (creationDate != null) ? 31 * result + creationDate.hashCode() : result;
++        result = (modifiedDate != null) ? 31 * result + modifiedDate.hashCode() : result;
++        result = 31 * result + (enabled ? 1 : 0);
++        result = 31 * result + (int) (version ^ (version >>> 32));
++        return result;
++    }
++
++    @Override
++    public String toString() {
++        return "ObserverCoreImpl{" +
++                "id=" + id +
++                ", name='" + name + '\'' +
++                ", description='" + description + '\'' +
++                ", creationDate=" + creationDate +
++                ", modifiedDate=" + modifiedDate +
++                ", enabled=" + enabled +
++                ", version=" + version +
++                "} " + super.toString();
++    }
++
++
++}
+Index: UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/component/UserManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/component/UserManager.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ UserManagement/UserManagementCore/src/main/java/org/usermanagement/core/component/UserManager.java	(revision )
+@@ -2,6 +2,11 @@
+ 
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Component;
++import org.usermanagement.core.exception.ApplicationException;
++import org.usermanagement.core.exception.BaseException;
++import org.usermanagement.core.exception.BusinessException;
++import org.usermanagement.core.exception.type.Core;
++import org.usermanagement.core.exception.type.Database;
+ import org.usermanagement.model.User;
+ import org.usermanagement.platform.db.PersistenceHandler;
+ import org.usermanagement.platform.db.PersistenceHandlerImpl;
+@@ -21,16 +26,45 @@
+     @Autowired
+     private PersistenceHandler persistenceHandler;
+ 
+-    public User saveUserManager(User user){
+-        return (User) persistenceHandler.saveObject(user);
++    public User saveUserManager(User user) throws ApplicationException{
++        try{
++            user = (User) persistenceHandler.saveObject(user);
++        }catch (BaseException e){
++            if(e.getExceptions() instanceof Database){
++                throw new ApplicationException(Database.SAVE_FAILED);
++            }
++        }
++        return user;
+ 
+     }
+ 
+-    public User getUserById(long id) {
+-        return (User) persistenceHandler.getObjectById(User.class,id);
++    public User getUserById(long id) throws ApplicationException, BusinessException{
++        User user = null;
++        try{
++            user = (User) persistenceHandler.getObjectById(User.class,id);
++            if(user== null){
++                throw new BusinessException(Core.NO_DATA_FOUND);
+-    }
++            }
++        }catch (BaseException e){
++            if(e.getExceptions() instanceof Database){
++                throw new ApplicationException(Database.SEARCH_FAILED);
++            }
++        }
++        return user;
++    }
+ 
+-    public List<User> getUserByUserName(String username) {
+-        return (List<User>) persistenceHandler.getObjectByProperty(User.class,"username","ROOT");
++    public List<User> getUserByUserName(String username) throws ApplicationException,BusinessException{
++        List<User> users = null;
++        try{
++            users = (List<User>) persistenceHandler.getObjectByProperty(User.class,"username","ROOT");
++            if(users == null){
++                throw new BusinessException(Core.NO_DATA_FOUND);
++            }
++        }catch (BaseException e){
++            if(e.getExceptions() instanceof Database){
++                throw new ApplicationException(Database.SEARCH_FAILED);
++            }
++        }
++        return users;
+     }
+ }
+Index: Platform/src/main/java/org/usermanagement/core/util/impl/DateUtilImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/util/impl/DateUtilImpl.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/util/impl/DateUtilImpl.java	(revision )
+@@ -0,0 +1,76 @@
++package org.usermanagement.core.util.impl;
++
++import org.usermanagement.core.util.DateUtil;
++
++import java.util.Date;
++
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 8/4/17
++ * Time: 11:27 PM
++ * To change this template use File | Settings | File Templates.
++ */
++public class DateUtilImpl implements DateUtil {
++
++    @Override
++    public Date getCurrentLocalDate() {
++        return new Date();  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date getCurrentUTCDate() {
++        return new Date();  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date addDaysToDate(Date date, long days) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date addSecondsToDate(Date date, long seconds) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date addHoursToDate(Date date, long hours) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date addMinutesToDate(Date date, long minutes) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date addYearsToDate(Date date, long years) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date negateDaysToDate(Date date, long days) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date negateSecondsToDate(Date date, long seconds) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date negateHoursToDate(Date date, long hours) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date negateMinutesToDate(Date date, long minutes) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public Date negateYearsToDate(Date date, long years) {
++        return null;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++}
+Index: Platform/src/main/java/org/usermanagement/core/exception/type/Database.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/type/Database.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/type/Database.java	(revision )
+@@ -0,0 +1,37 @@
++package org.usermanagement.core.exception.type;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:31 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public enum Database implements Exceptions{
++    SAVE_FAILED("Saving the object failed",Type.CRITICAL),
++    DELETE_FAILED("Deletion of object failed",Type.CRITICAL),
++    SEARCH_FAILED("Search failed",Type.MINOR);
++
++    private final String message;
++    private final Type type;
++    private Database(final String message,final Type type){
++        this.message = message;
++        this.type = type;
++    }
++
++    public String getMessage() {
++        return message;
++    }
++
++    public Type getType() {
++        return type;
++    }
++
++    @Override
++    public String toString() {
++        return "Database{" +
++                "message='" + message + '\'' +
++                ", type=" + type +
++                "} " + super.toString();
++    }
++}
+Index: README
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- README	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ README	(revision )
+@@ -1,1 +1,1 @@
+-This file was created by IntelliJ IDEA 12.1.4 for binding GitHub repository
+\ No newline at end of file
++This is a test project
+\ No newline at end of file
+Index: Platform/src/main/java/org/usermanagement/core/exception/ApplicationException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/exception/ApplicationException.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/exception/ApplicationException.java	(revision )
+@@ -0,0 +1,17 @@
++package org.usermanagement.core.exception;
++
++import org.usermanagement.core.exception.type.Exceptions;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:21 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public class ApplicationException extends BaseException{
++
++    public ApplicationException(Exceptions exceptions) {
++        super(exceptions);
++    }
++}
+Index: Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandler.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ Platform/src/main/java/org/usermanagement/platform/db/PersistenceHandler.java	(revision )
+@@ -1,5 +1,7 @@
+ package org.usermanagement.platform.db;
+ 
++import org.usermanagement.core.exception.BaseException;
++
+ import java.util.List;
+ 
+ /**
+@@ -16,15 +18,23 @@
+      * @param object
+      * @return
+      */
+-    public Object saveObject(Object object);
++    public Object saveObject(Object object) throws BaseException;
+ 
+     /**
+      *
++     * @param object
++     * @return
++     * @throws BaseException
++     */
++    public Object deleteObject(Object object) throws  BaseException;
++
++    /**
++     *
+      * @param entity
+      * @param id
+      * @return
+      */
+-    public Object getObjectById(Class entity, long id);
++    public Object getObjectById(Class entity, long id) throws BaseException;
+ 
+     /**
+      *
+@@ -33,5 +43,5 @@
+      * @param value
+      * @return
+      */
+-    public List<?> getObjectByProperty(Class entity, String property, String value);
++    public List<?> getObjectByProperty(Class entity, String property, String value) throws BaseException;
+ }
+Index: UserManagement/UserManagementWebapp/src/main/webapp/index.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- UserManagement/UserManagementWebapp/src/main/webapp/index.jsp	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ UserManagement/UserManagementWebapp/src/main/webapp/index.jsp	(revision )
+@@ -1,15 +1,20 @@
++<%@ page import="org.springframework.web.context.WebApplicationContext" %>
++<%@ page import="org.springframework.web.context.ContextLoader" %>
++<%@ page import="org.usermanagement.platform.db.PersistenceHandler" %>
++<%@ page import="org.usermanagement.platform.db.PersistenceHandlerImpl" %>
+ <html>
+ <body>
+ <h2>Hello World!</h2>
+ <%
+-    org.usermanagement.platform.db.PersistenceHandlerImpl persistenceHandlerImpl = org.usermanagement.platform.db.PersistenceHandlerImpl.getInstance();
++
++    WebApplicationContext applicationContext = ContextLoader.getCurrentWebApplicationContext();
++    PersistenceHandler persistenceHandler = applicationContext.getBean(PersistenceHandlerImpl.class);
+     org.usermanagement.model.User user = new org.usermanagement.model.User();
+     user.setUsername("A");
+     user.setPassword("ABC");
+     user.setContactNumber("917293712");
+     user.setContactEmail("A@A.com");
+-
+-    persistenceHandlerImpl.saveObject(user);
++    persistenceHandler.saveObject(user);
+ 
+ %>
+ </body>
+Index: Platform/src/main/java/org/usermanagement/core/util/DateUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/util/DateUtil.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/util/DateUtil.java	(revision )
+@@ -0,0 +1,106 @@
++package org.usermanagement.core.util;
++
++import java.util.Date;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 8/4/17
++ * Time: 11:27 PM
++ * To change this template use File | Settings | File Templates.
++ */
++public interface DateUtil {
++    /**
++     *  get current local date
++     * @return Date
++     */
++    public Date getCurrentLocalDate();
++
++    /**
++     * get Current UTC date
++     * @return Date
++     */
++    public Date getCurrentUTCDate();
++
++    /**
++     * add days to date
++     * @param date
++     * @param days
++     * @return  date
++     */
++    public Date addDaysToDate(Date date, long days);
++
++    /**
++     * add seconds to date
++     * @param date
++     * @param seconds
++     * @return date
++     */
++    public Date addSecondsToDate(Date date, long seconds);
++
++    /**
++     * add hours to date
++     * @param date
++     * @param hours
++     * @return date
++     */
++    public Date addHoursToDate(Date date, long hours);
++
++    /**
++     * add minutes to date
++     * @param date
++     * @param minutes
++     * @return date
++     */
++    public Date addMinutesToDate(Date date, long minutes);
++
++    /**
++     * add years to date
++     * @param date
++     * @param years
++     * @return date
++     */
++    public Date addYearsToDate(Date date, long years);
++
++    /**
++     * negate days from date
++     * @param date
++     * @param days
++     * @return date
++     */
++    public Date negateDaysToDate(Date date, long days);
++
++    /**
++     * negate seconds from date
++     * @param date
++     * @param seconds
++     * @return date
++     */
++    public Date negateSecondsToDate(Date date, long seconds);
++
++    /**
++     * negate hours from date
++     * @param date
++     * @param hours
++     * @return date
++     */
++    public Date negateHoursToDate(Date date, long hours);
++
++    /**
++     * negate minutes from date
++     * @param date
++     * @param minutes
++     * @return  date
++     */
++    public Date negateMinutesToDate(Date date, long minutes);
++
++    /**
++     * negate years from date
++     * @param date
++     * @param years
++     * @return date
++     */
++    public Date negateYearsToDate(Date date, long years);
++
++
++}
+Index: Platform/src/main/resources/applicationContext-Persistence.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/resources/applicationContext-Persistence.xml	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ Platform/src/main/resources/applicationContext-Persistence.xml	(revision )
+@@ -17,8 +17,7 @@
+           p:driverClassName="com.mysql.jdbc.Driver"
+           p:url="jdbc:mysql://localhost/mysql"
+           p:username="root"
+-          p:password="root"
+-            />
++          p:password="root"/>
+ 
+     <bean id="mySqlSessionFactory"
+           class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" p:dataSource-ref="dataSource">
+@@ -33,7 +32,10 @@
+                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                 <prop key="hibernate.current_session_context_class">thread</prop>
+                 <prop key="hibernate.show_sql">false</prop>
+-                <prop key="hibernate.hbm2ddl.auto">create</prop>
++                <prop key="hibernate.default_schema">USERMANAGER</prop>
++                <prop key="hibernate.hbm2ddl.auto">update</prop>
++                <!--<prop key="hibernate.hbm2ddl.auto">create</prop>
++                <prop key="hibernate.hbm2ddl.import_files">SchemaCreator.sql</prop> -->
+             </props>
+         </property>
+     </bean>
+\ No newline at end of file
+Index: Platform/src/main/java/org/usermanagement/core/model/impl/ObserverSimpleImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/model/impl/ObserverSimpleImpl.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/model/impl/ObserverSimpleImpl.java	(revision )
+@@ -0,0 +1,23 @@
++package org.usermanagement.core.model.impl;
++
++import org.usermanagement.core.model.Observer;
++import org.usermanagement.core.model.Simple;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 9/4/17
++ * Time: 12:07 AM
++ * To change this template use File | Settings | File Templates.
++ */
++public abstract class ObserverSimpleImpl implements Simple, Observer {
++    @Override
++    public long getId() {
++        return 0;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++
++    @Override
++    public long setId(long id) {
++        return 0;  //To change body of implemented methods use File | Settings | File Templates.
++    }
++}
+Index: Platform/src/main/java/org/usermanagement/core/model/impl/CoreImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Platform/src/main/java/org/usermanagement/core/model/impl/CoreImpl.java	(revision )
++++ Platform/src/main/java/org/usermanagement/core/model/impl/CoreImpl.java	(revision )
+@@ -0,0 +1,135 @@
++package org.usermanagement.core.model.impl;
++
++import org.usermanagement.core.model.Core;
++import org.usermanagement.core.util.DateUtil;
++import org.usermanagement.core.util.impl.DateUtilImpl;
++
++import javax.persistence.GeneratedValue;
++import javax.persistence.GenerationType;
++import javax.persistence.Id;
++import javax.persistence.MappedSuperclass;
++import java.util.Date;
++
++/**
++ * Created with IntelliJ IDEA.
++ * User: ganes
++ * Date: 8/4/17
++ * Time: 7:02 PM
++ * To change this template use File | Settings | File Templates.
++ */
++@MappedSuperclass
++public class CoreImpl implements Core {
++    private static DateUtil dateUtil = new DateUtilImpl();
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private long id;
++    private String name;
++    private String description;
++    private Date creationDate;
++    private Date modifiedDate;
++    private boolean enabled;
++    private long version;
++
++    public long getId() {
++        return id;
++    }
++
++    public long setId(long id) {
++        this.id = id;
++        return this.id;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public String setName(String name) {
++        this.name = name;
++        return this.name;
++    }
++
++    public String getDescription() {
++        return description;
++    }
++
++    public String setDescription(String description) {
++        this.description = description;
++        return this.description;
++    }
++
++    public Date getCreationDate() {
++        return creationDate;
++    }
++
++    public Date setCreationDate(Date creationDate) {
++        this.creationDate = creationDate;
++        return this.creationDate;
++    }
++
++    public Date getModifiedDate() {
++        return modifiedDate;
++    }
++
++    public Date setModifiedDate(Date modifiedDate) {
++        this.modifiedDate = modifiedDate;
++        return this.modifiedDate;
++    }
++
++    public boolean isEnabled() {
++        return enabled;
++    }
++
++    public boolean setEnabled(boolean enabled) {
++        this.enabled = enabled;
++        return this.enabled;
++    }
++
++    public long getVersion() {
++        return version;
++    }
++
++    public long setVersion(long version) {
++        this.version = version;
++        return this.version;
++    }
++
++    @Override
++    public void updateVersion() {
++        if(this.creationDate == null){
++            this.creationDate = dateUtil.getCurrentUTCDate();
++        }
++        this.modifiedDate = dateUtil.getCurrentUTCDate();
++        this.version ++;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (!(o instanceof CoreImpl)) return false;
++
++        CoreImpl that = (CoreImpl) o;
++
++        if (enabled != that.enabled) return false;
++        if (id != that.id) return false;
++        if (version != that.version) return false;
++        if (creationDate != null && !creationDate.equals(that.creationDate)) return false;
++        if (description !=null && !description.equals(that.description)) return false;
++        if (modifiedDate != null && !modifiedDate.equals(that.modifiedDate)) return false;
++        if (name != null && !name.equals(that.name)) return false;
++
++        return true;
++    }
++
++    @Override
++    public int hashCode() {
++        int result = (int) (id ^ (id >>> 32));
++        result = (name != null) ? 31 * result + name.hashCode() : result;
++        result = (description != null) ? 31 * result + description.hashCode() : result;
++        result = (creationDate != null) ? 31 * result + creationDate.hashCode() : result;
++        result = (modifiedDate != null) ? 31 * result + modifiedDate.hashCode() : result;
++        result = 31 * result + (enabled ? 1 : 0);
++        result = 31 * result + (int) (version ^ (version >>> 32));
++        return result;
++    }
++
++}
+Index: model/src/main/java/org/usermanagement/model/Role.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- model/src/main/java/org/usermanagement/model/Role.java	(revision 817d5faac41f5840af347add5743915a3d139ed8)
++++ model/src/main/java/org/usermanagement/model/Role.java	(revision )
+@@ -1,5 +1,7 @@
+ package org.usermanagement.model;
+ 
++import org.usermanagement.core.model.impl.CoreImpl;
++
+ import javax.persistence.*;
+ 
+ /**
+@@ -12,33 +14,6 @@
+ 
+ @Entity
+ @Table(name="Role")
+-public class Role {
+-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+-    private long id;
+-    private String name;
+-    private String description;
++public class Role extends CoreImpl {
+ 
+-    public long getId() {
+-        return id;
+-    }
+-
+-    public void setId(long id) {
+-        this.id = id;
+-    }
+-
+-    public String getName() {
+-        return name;
+-    }
+-
+-    public void setName(String name) {
+-        this.name = name;
+-    }
+-
+-    public String getDescription() {
+-        return description;
+-    }
+-
+-    public void setDescription(String description) {
+-        this.description = description;
+-    }
+ }
