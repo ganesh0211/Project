@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.usermanagement.core.component.UserManager;
+import org.usermanagement.core.exception.ApplicationException;
+import org.usermanagement.core.exception.BusinessException;
 import org.usermanagement.model.User;
 
 /**
@@ -28,28 +30,38 @@ public class UserController {
 
     @RequestMapping("/getRootUser")
     @ResponseBody
-    public String getRootUserDetails(){
+    public String getRootUserDetails() {
         return "Welcome Admin !!!!";
     }
 
     @RequestMapping("/saveDummyRootUser")
     @ResponseBody
-    public String saveDummyRootUser(){
+    public String saveDummyRootUser() {
         User user = new User();
         user.setUsername("ROOT");
         user.setPassword("ROOT");
         user.setContactEmail("Root@usermanagement.org");
         user.setContactNumber("9876543211");
-        user = userManager.saveUserManager(user);
-        return "Saved : "+user.toString();
+        try {
+            user = userManager.saveUserManager(user);
+        } catch (ApplicationException applicationException) {
+            return applicationException.getExceptions().toString();
+        }
+        return "Saved : " + user.toString();
     }
 
-    @RequestMapping(value = {"/getUserDetails"},method = RequestMethod.GET)
-    public String getUserDetails(@RequestParam("id") long id,ModelMap modelMap){
-        User user = userManager.getUserById(id);
-        modelMap.addAttribute("userName",user.getUsername());
-        modelMap.addAttribute("email",user.getContactEmail());
-        modelMap.addAttribute("contactNumber",user.getContactNumber());
+    @RequestMapping(value = {"/getUserDetails"}, method = RequestMethod.GET)
+    public String getUserDetails(@RequestParam("id") long id, ModelMap modelMap) {
+        try {
+            User user = userManager.getUserById(id);
+            modelMap.addAttribute("userName", user.getUsername());
+            modelMap.addAttribute("email", user.getContactEmail());
+            modelMap.addAttribute("contactNumber", user.getContactNumber());
+        } catch (ApplicationException applicationException) {
+            return applicationException.getExceptions().toString();
+        } catch (BusinessException businessException) {
+            return businessException.getExceptions().toString();
+        }
         return "welcomeUser";
 
     }

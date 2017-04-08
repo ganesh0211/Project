@@ -1,6 +1,8 @@
 package org.usermanagement.model;
 
 
+import org.usermanagement.core.model.impl.ObserverCoreImpl;
+
 import javax.persistence.*;
 
 /**
@@ -11,10 +13,9 @@ import javax.persistence.*;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name = "Users")
-public class User {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+@Table(name = "User")
+public class User extends ObserverCoreImpl {
+
     private String firstName;
     private String lastName;
     private String middleName;
@@ -22,82 +23,128 @@ public class User {
     private String password;
     private String contactEmail;
     private String contactNumber;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    @ManyToOne
+    private Role role;
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    public String setFirstName(String firstName) {
         this.firstName = firstName;
+        return this.firstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    public String setLastName(String lastName) {
         this.lastName = lastName;
+        return this.lastName;
     }
 
     public String getMiddleName() {
         return middleName;
     }
 
-    public void setMiddleName(String middleName) {
+    public String setMiddleName(String middleName) {
         this.middleName = middleName;
+        return this.middleName;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public String setUsername(String username) {
         this.username = username;
+        return username;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public String setPassword(String password) {
         this.password = password;
+        return this.password;
     }
 
     public String getContactEmail() {
         return contactEmail;
     }
 
-    public void setContactEmail(String contactEmail) {
+    public String setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
+        return this.contactEmail;
     }
 
     public String getContactNumber() {
         return contactNumber;
     }
 
-    public void setContactNumber(String contactNumber) {
+    public String setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+        return this.contactNumber;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public Role setRole(Role role) {
+        this.role = role;
+        return this.role;
+    }
+
+    @Override
+    public void notifyUpdate() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        if (!super.equals(o)) return false;
+
+        User user = (User) o;
+
+        if (!contactEmail.equals(user.contactEmail)) return false;
+        if (!contactNumber.equals(user.contactNumber)) return false;
+        if (!firstName.equals(user.firstName)) return false;
+        if (!lastName.equals(user.lastName)) return false;
+        if (!middleName.equals(user.middleName)) return false;
+        if (!password.equals(user.password)) return false;
+        if (!username.equals(user.username)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = (firstName != null) ? 31 * result + firstName.hashCode() : result;
+        result = (lastName != null) ? 31 * result + lastName.hashCode() : result;
+        result = (middleName != null) ? 31 * result + middleName.hashCode() : result;
+        result = (username != null) ? 31 * result + username.hashCode() : result;
+        result = (password != null) ? 31 * result + password.hashCode() : result;
+        result = (contactEmail != null) ? 31 * result + contactEmail.hashCode() : result;
+        result = (contactNumber != null) ? 31 * result + contactNumber.hashCode() : result;
+        return result;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "username='" + username + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", middleName='" + middleName + '\'' +
-                ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", contactEmail='" + contactEmail + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
-                '}';
+                "} " + super.toString();
     }
 }

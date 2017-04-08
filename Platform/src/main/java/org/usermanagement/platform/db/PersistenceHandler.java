@@ -1,5 +1,7 @@
 package org.usermanagement.platform.db;
 
+import org.usermanagement.core.exception.BaseException;
+
 import java.util.List;
 
 /**
@@ -12,26 +14,30 @@ import java.util.List;
 public interface PersistenceHandler {
 
     /**
-     *
      * @param object
      * @return
      */
-    public Object saveObject(Object object);
+    public Object saveObject(Object object) throws BaseException;
 
     /**
-     *
+     * @param object
+     * @return
+     * @throws BaseException
+     */
+    public Object deleteObject(Object object) throws BaseException;
+
+    /**
      * @param entity
      * @param id
      * @return
      */
-    public Object getObjectById(Class entity, long id);
+    public Object getObjectById(Class entity, long id) throws BaseException;
 
     /**
-     *
      * @param entity
      * @param property
      * @param value
      * @return
      */
-    public List<?> getObjectByProperty(Class entity, String property, String value);
+    public List<?> getObjectByProperty(Class entity, String property, String value) throws BaseException;
 }

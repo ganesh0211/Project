@@ -29,6 +29,6 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>UserManagementWebapp</finalName>
+        <finalName>UserManagement</finalName>
     </build>
 </project>
