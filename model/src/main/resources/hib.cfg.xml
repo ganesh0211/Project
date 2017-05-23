@@ -24,8 +24,11 @@
         <property name="hbm2ddl.auto">create</property>
 
         <!-- List of mapping class -->
-        <mapping class="org.usermanagement.model.User"/>
-        <mapping class="org.usermanagement.model.Role"/>
+        <mapping class="org.model.usermanagement.User"/>
+        <mapping class="org.model.usermanagement.Role"/>
+        <mapping class="org.model.usermanagement.PermissionSet"/>
+        <mapping class="org.model.usermanagement.RolePermissionSet"/>
+        <mapping class="org.model.usermanagement.Permission"/>
 
     </session-factory>
 </hibernate-configuration>

@@ -7,9 +7,8 @@ import org.usermanagement.core.exception.BaseException;
 import org.usermanagement.core.exception.BusinessException;
 import org.usermanagement.core.exception.type.Core;
 import org.usermanagement.core.exception.type.Database;
-import org.usermanagement.model.User;
+import org.model.usermanagement.User;
 import org.usermanagement.platform.db.PersistenceHandler;
-import org.usermanagement.platform.db.PersistenceHandlerImpl;
 
 import java.util.List;
 

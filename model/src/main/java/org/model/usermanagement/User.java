@@ -1,4 +1,4 @@
-package org.usermanagement.model;
+package org.model.usermanagement;
 
 
 import org.usermanagement.core.model.impl.ObserverCoreImpl;
@@ -13,7 +13,7 @@ import javax.persistence.*;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name = "User")
+@Table(name = "USER")
 public class User extends ObserverCoreImpl {
 
     private String firstName;

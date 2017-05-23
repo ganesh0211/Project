@@ -10,6 +10,8 @@ import org.usermanagement.core.exception.type.Database;
 import org.usermanagement.core.exception.type.Exceptions;
 import org.usermanagement.core.model.Core;
 import org.usermanagement.core.model.Observer;
+import org.usermanagement.core.util.DateUtil;
+import org.usermanagement.core.util.impl.DateUtilImpl;
 
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class PersistenceHandlerImpl implements PersistenceHandler {
 
     @Autowired
     private HibernateUtils hibernateUtils;
+    private DateUtil dateUtil = new DateUtilImpl();
 
     private PersistenceHandlerImpl() {
 
@@ -53,6 +56,12 @@ public class PersistenceHandlerImpl implements PersistenceHandler {
 
     private void preSaveUpdate(Object object) {
         if (object instanceof Core) {
+            if (((Core) object).getCreationDate() == null) {
+                ((Core) object).setCreationDate(dateUtil.getCurrentUTCDate());
+
+            }
+            ((Core) object).setEnabled(true);
+            ((Core) object).setModifiedDate(dateUtil.getCurrentUTCDate());
             ((Core) object).updateVersion();
         }
     }

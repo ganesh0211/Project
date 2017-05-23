@@ -23,8 +23,11 @@
           class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" p:dataSource-ref="dataSource">
         <property name="annotatedClasses">
             <list>
-                <value>org.usermanagement.model.User</value>
-                <value>org.usermanagement.model.Role</value>
+                <value>org.model.usermanagement.User</value>
+                <value>org.model.usermanagement.Role</value>
+                <value>org.model.usermanagement.Permission</value>
+                <value>org.model.usermanagement.PermissionSet</value>
+                <value>org.model.usermanagement.RolePermissionSet</value>
             </list>
         </property>
         <property name="hibernateProperties">

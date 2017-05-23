@@ -11,8 +11,10 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spring-framework.version>4.1.1.RELEASE</spring-framework.version>
+        <spring-framework.version>4.3.1.RELEASE</spring-framework.version>
         <hibernate-framework.version>4.2.2.Final</hibernate-framework.version>
+        <springsecurity.version>4.1.1.RELEASE</springsecurity.version>
+        <springsecurityoauth2.version>2.0.10.RELEASE</springsecurityoauth2.version>
     </properties>
 
     <artifactId>Platform</artifactId>
@@ -66,6 +68,26 @@
             <artifactId>spring-orm</artifactId>
             <version>${spring-framework.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.org.usermanagement.security/spring-org.usermanagement.security-core -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${springsecurity.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>${springsecurity.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${springsecurity.version}</version>
+        </dependency>
+
         <!--MySQL Dependency -->
         <dependency>
             <groupId>mysql</groupId>
