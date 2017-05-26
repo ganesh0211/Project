@@ -25,6 +25,10 @@ public class User extends ObserverCoreImpl {
     private String contactNumber;
     @ManyToOne
     private Role role;
+    @ManyToOne
+    private User manager;
+    @ManyToOne
+    private UserGroup userGroup;
 
     public String getFirstName() {
         return firstName;
@@ -98,7 +102,25 @@ public class User extends ObserverCoreImpl {
         return this.role;
     }
 
-    @Override
+
+    public User getManager() {
+		return manager;
+	}
+
+	public User setManager(User manager) {
+		this.manager = manager;
+		return this.manager;
+	}
+
+	public UserGroup getUserGroup() {
+		return userGroup;
+	}
+
+	public void setUserGroup(UserGroup userGroup) {
+		this.userGroup = userGroup;
+	}
+
+	@Override
     public void notifyUpdate() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -118,6 +140,9 @@ public class User extends ObserverCoreImpl {
         if (!middleName.equals(user.middleName)) return false;
         if (!password.equals(user.password)) return false;
         if (!username.equals(user.username)) return false;
+        if (!role.equals(user.role)) return false;
+        if (!manager.equals(user.manager)) return false;
+        if (!userGroup.equals(user.userGroup)) return false;
 
         return true;
     }
@@ -132,6 +157,9 @@ public class User extends ObserverCoreImpl {
         result = (password != null) ? 31 * result + password.hashCode() : result;
         result = (contactEmail != null) ? 31 * result + contactEmail.hashCode() : result;
         result = (contactNumber != null) ? 31 * result + contactNumber.hashCode() : result;
+        result = (role != null) ? 31 * result + role.hashCode() : result;
+        result = (manager != null) ? 31 * result + manager.hashCode() : result;
+        result = (userGroup != null) ? 31 * result + userGroup.hashCode() : result;
         return result;
     }
 
@@ -145,6 +173,9 @@ public class User extends ObserverCoreImpl {
                 ", password='" + password + '\'' +
                 ", contactEmail='" + contactEmail + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
+                ", role='" + role + '\'' +
+                ", manager='" + manager + '\'' +
+                ", userGroup='" + userGroup + '\'' +
                 "} " + super.toString();
     }
 }
