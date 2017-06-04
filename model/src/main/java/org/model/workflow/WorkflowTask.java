@@ -6,6 +6,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.model.usermanagement.UserGroup;
+import org.springframework.cglib.core.ObjectSwitchCallback;
+import org.usermanagement.core.model.impl.ObserverCoreImpl;
 import org.usermanagement.core.model.impl.ObserverSimpleImpl;
 
 /**
@@ -17,7 +19,7 @@ import org.usermanagement.core.model.impl.ObserverSimpleImpl;
  */
 @Entity
 @Table(name = "WORKFLOWTASK")
-public class WorkflowTask extends ObserverSimpleImpl {
+public class WorkflowTask extends ObserverCoreImpl {
 
     private Type type;
     @ManyToOne

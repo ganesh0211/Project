@@ -3,10 +3,7 @@ package org.model.workflow;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.usermanagement.core.model.impl.ObserverCoreImpl;
 import org.usermanagement.core.model.impl.ObserverSimpleImpl;
@@ -25,6 +22,7 @@ public class Task extends ObserverCoreImpl {
     private Type type;
     @ManyToOne
     private Process process;
+    @Transient
     private TaskImplementer taskImplementer;
     @ManyToOne
     private TaskUserGroup taskUserGroup;

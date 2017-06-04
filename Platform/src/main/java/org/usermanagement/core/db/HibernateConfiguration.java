@@ -32,7 +32,7 @@ public class HibernateConfiguration {
         System.out.print("HIBERNATAE_LOADING_CALLED");
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(defaultDataSource());
-        sessionFactory.setPackagesToScan(new String[]{"org.model.usermanagement"});
+        sessionFactory.setPackagesToScan(new String[]{"org.model.usermanagement", "org.model.workflow"});
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
