@@ -3,6 +3,10 @@ package org.usermanagement.core.model.impl;
 import org.usermanagement.core.model.Observer;
 import org.usermanagement.core.model.Simple;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 /**
  * Created with IntelliJ IDEA.
  * User: ganes
@@ -11,13 +15,17 @@ import org.usermanagement.core.model.Simple;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class ObserverSimpleImpl implements Simple, Observer {
-    @Override
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
     public long getId() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return id;
     }
 
-    @Override
     public long setId(long id) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        this.id = id;
+        return this.id;
     }
 }

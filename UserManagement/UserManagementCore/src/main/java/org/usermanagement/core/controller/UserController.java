@@ -70,52 +70,56 @@ public class UserController {
 
     }
 
-    @RequestMapping(value = {"/", "/home"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/", "/home"})
     public String homePage(ModelMap model) {
         model.addAttribute("greeting", "Hi, Welcome to mysite");
         return "welcome.jsp";
     }
 
-    @RequestMapping(value = "/admin", method = RequestMethod.GET)
+    @RequestMapping(value = "/admin")
     public String adminPage(ModelMap model) {
         model.addAttribute("user", getPrincipal());
         return "admin";
     }
 
-    @RequestMapping(value = "/db", method = RequestMethod.GET)
+    @RequestMapping(value = "/db")
     public String dbaPage(ModelMap model) {
         model.addAttribute("user", getPrincipal());
         return "dba";
     }
 
-    @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
+    @RequestMapping(value = "/Access_Denied")
     public String accessDeniedPage(ModelMap model) {
         model.addAttribute("user", getPrincipal());
         return "accessDenied";
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @RequestMapping(value = "/login")
     public String loginPage() {
         return "login";
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @RequestMapping(value = "/logout")
     public String logoutPage(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
-        return "redirect:/login?logout";
+        return "login";
     }
 
     private String getPrincipal() {
         String userName = null;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try{
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (principal instanceof UserDetails) {
-            userName = ((UserDetails) principal).getUsername();
-        } else {
-            userName = principal.toString();
+            if (principal instanceof UserDetails) {
+                userName = ((UserDetails) principal).getUsername();
+            } else {
+                userName = principal.toString();
+            }
+        }catch (Exception e) {
+
         }
         return userName;
     }

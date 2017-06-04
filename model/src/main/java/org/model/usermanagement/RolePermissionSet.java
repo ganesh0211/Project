@@ -17,8 +17,8 @@ import javax.persistence.Table;
 @Table(name = "ROLEPERMISSIONSET")
 public class RolePermissionSet extends SimpleImpl {
 
-    @ManyToOne
+    @ManyToOne(targetEntity = Role.class)
     private Role role;
-    @ManyToOne
+    @ManyToOne(targetEntity = PermissionSet.class)
     private PermissionSet permissionSet;
 }

@@ -23,11 +23,11 @@ public class User extends ObserverCoreImpl {
     private String password;
     private String contactEmail;
     private String contactNumber;
-    @ManyToOne
+    @ManyToOne(targetEntity = Role.class)
     private Role role;
-    @ManyToOne
+    @ManyToOne(targetEntity = User.class)
     private User manager;
-    @ManyToOne
+    @ManyToOne(targetEntity = UserGroup.class)
     private UserGroup userGroup;
 
     public String getFirstName() {
@@ -104,23 +104,23 @@ public class User extends ObserverCoreImpl {
 
 
     public User getManager() {
-		return manager;
-	}
+        return manager;
+    }
 
-	public User setManager(User manager) {
-		this.manager = manager;
-		return this.manager;
-	}
+    public User setManager(User manager) {
+        this.manager = manager;
+        return this.manager;
+    }
 
-	public UserGroup getUserGroup() {
-		return userGroup;
-	}
+    public UserGroup getUserGroup() {
+        return userGroup;
+    }
 
-	public void setUserGroup(UserGroup userGroup) {
-		this.userGroup = userGroup;
-	}
+    public void setUserGroup(UserGroup userGroup) {
+        this.userGroup = userGroup;
+    }
 
-	@Override
+    @Override
     public void notifyUpdate() {
         //To change body of implemented methods use File | Settings | File Templates.
     }

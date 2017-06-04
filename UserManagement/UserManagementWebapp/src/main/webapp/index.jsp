@@ -1,7 +1,7 @@
 <%@ page import="org.springframework.web.context.WebApplicationContext" %>
 <%@ page import="org.springframework.web.context.ContextLoader" %>
-<%@ page import="org.usermanagement.platform.db.PersistenceHandler" %>
-<%@ page import="org.usermanagement.platform.db.PersistenceHandlerImpl" %>
+<%@ page import="org.usermanagement.core.db.PersistenceHandler" %>
+<%@ page import="org.usermanagement.core.db.PersistenceHandlerImpl" %>
 <%@ page import="org.model.usermanagement.User" %>
 <html>
 <body>

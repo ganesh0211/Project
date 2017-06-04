@@ -1,6 +1,7 @@
 package org.usermanagement.core.component;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.usermanagement.core.exception.ApplicationException;
 import org.usermanagement.core.exception.BaseException;
@@ -8,7 +9,7 @@ import org.usermanagement.core.exception.BusinessException;
 import org.usermanagement.core.exception.type.Core;
 import org.usermanagement.core.exception.type.Database;
 import org.model.usermanagement.User;
-import org.usermanagement.platform.db.PersistenceHandler;
+import org.usermanagement.core.db.PersistenceHandler;
 
 import java.util.List;
 
@@ -22,7 +23,8 @@ import java.util.List;
 @Component
 public class UserManager {
 
-    @Autowired
+    @Autowired(required = true)
+    @Qualifier("DB")
     private PersistenceHandler persistenceHandler;
 
     public User saveUserManager(User user) throws ApplicationException {
