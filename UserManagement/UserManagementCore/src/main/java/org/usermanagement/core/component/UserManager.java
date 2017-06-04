@@ -29,7 +29,7 @@ public class UserManager {
 
     public User saveUserManager(User user) throws ApplicationException {
         try {
-            user = (User) persistenceHandler.saveObject(user);
+            user = (User) persistenceHandler.saveObject(null, user);
         } catch (BaseException e) {
             if (e.getExceptions() instanceof Database) {
                 throw new ApplicationException(Database.SAVE_FAILED);
