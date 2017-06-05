@@ -11,13 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.usermanagement.core.SimpleJobCheck;
 import org.usermanagement.core.component.UserManager;
 import org.usermanagement.core.exception.ApplicationException;
 import org.usermanagement.core.exception.BusinessException;
 import org.model.usermanagement.User;
+import org.usermanagement.core.scheduler.SchedulerManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,6 +36,9 @@ public class UserController {
     @Autowired
     UserManager userManager;
 
+    @Autowired
+    SchedulerManager schedulerManager;
+
     @RequestMapping("/getRootUser")
     @ResponseBody
     public String getRootUserDetails() {
@@ -41,6 +48,11 @@ public class UserController {
     @RequestMapping("/saveDummyRootUser")
     @ResponseBody
     public String saveDummyRootUser() {
+        try {
+            schedulerManager.createJob("TEST" + new Random().nextInt(), "GROUP", true, "0/10 * * * * ?", 0, new HashMap<Object, Object>(), SimpleJobCheck.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         User user = new User();
         user.setUsername("ROOT");
         user.setPassword("ROOT");
@@ -96,6 +108,7 @@ public class UserController {
 
     @RequestMapping(value = "/login")
     public String loginPage() {
+
         return "login";
     }
 
@@ -110,7 +123,7 @@ public class UserController {
 
     private String getPrincipal() {
         String userName = null;
-        try{
+        try {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
             if (principal instanceof UserDetails) {
@@ -118,7 +131,7 @@ public class UserController {
             } else {
                 userName = principal.toString();
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
 
         }
         return userName;
