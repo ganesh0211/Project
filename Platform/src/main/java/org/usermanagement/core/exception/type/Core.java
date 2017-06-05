@@ -9,7 +9,9 @@ package org.usermanagement.core.exception.type;
  */
 public enum Core implements Exceptions {
 
-    NO_DATA_FOUND("No data found.", Type.MINOR);
+    NO_DATA_FOUND("No data found.", Type.MINOR),
+    JOB_ALREADY_EXISTS("Failed to start the job.Job already exists", Type.MAJOR),
+    SCHEDULER_START_FAILED("Failed to start the scheduler", Type.CRITICAL);
 
     private final String message;
     private final Type type;
