@@ -32,7 +32,7 @@
                 <version>2.2</version>
                 <executions>
                     <execution>
-                        <phase>generate-sources</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>hbm2java</goal>
                         </goals>
