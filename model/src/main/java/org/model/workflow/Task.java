@@ -2,9 +2,11 @@ package org.model.workflow;
 
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import javax.persistence.*;
 
+import org.model.usermanagement.User;
 import org.usermanagement.core.model.impl.ObserverCoreImpl;
 import org.usermanagement.core.model.impl.ObserverSimpleImpl;
 
@@ -22,11 +24,18 @@ public class Task extends ObserverCoreImpl {
     private Type type;
     @ManyToOne
     private Process process;
+    @ManyToOne
+    private Workflow workflow;
     @Transient
     private TaskImplementer taskImplementer;
+    private TimeUnit timeUnit;
+    private long unitTime;
     @ManyToOne
     private TaskUserGroup taskUserGroup;
+    @ManyToOne
+    private User user;
     private boolean groupTask;
+    private boolean workflowTask;
     private Date plannedStartTime;
     private Date plannedEndTime;
     private Date actualStartTime;
@@ -63,12 +72,36 @@ public class Task extends ObserverCoreImpl {
         this.process = process;
     }
 
-    public TaskImplementer getTaskImplementer() {
+    public Workflow getWorkflow() {
+		return workflow;
+	}
+
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
+	}
+
+	public TaskImplementer getTaskImplementer() {
         return taskImplementer;
     }
 
     public void setTaskImplementer(TaskImplementer taskImplementer) {
         this.taskImplementer = taskImplementer;
+    }
+    
+    public long getUnitTime() {
+        return unitTime;
+    }
+    
+    public void setUnitTime(long unitTime) {
+        this.unitTime = unitTime;
+    }
+
+    public TimeUnit getTimeUnit() {
+        return this.timeUnit;
+    }
+    
+    public void setTimeUnit(TimeUnit timeUnit) {
+        this.timeUnit = timeUnit;
     }
 
     public TaskUserGroup getTaskUserGroup() {
@@ -79,7 +112,15 @@ public class Task extends ObserverCoreImpl {
         this.taskUserGroup = taskUserGroup;
     }
 
-    public boolean isGroupTask() {
+    public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public boolean isGroupTask() {
         return groupTask;
     }
 
@@ -87,7 +128,15 @@ public class Task extends ObserverCoreImpl {
         this.groupTask = groupTask;
     }
 
-    public Date getPlannedStartTime() {
+    public boolean isWorkflowTask() {
+		return this.workflowTask;
+	}
+
+	public void setWorkflowTask(boolean workflowTask) {
+		this.workflowTask = workflowTask;
+	}
+
+	public Date getPlannedStartTime() {
         return plannedStartTime;
     }
 
@@ -151,6 +200,7 @@ public class Task extends ObserverCoreImpl {
         Task task = (Task) o;
 
         if (groupTask != task.groupTask) return false;
+        if (workflowTask != task.workflowTask) return false;
         if (actualEndTime != null ? !actualEndTime.equals(task.actualEndTime) : task.actualEndTime != null)
             return false;
         if (actualStartTime != null ? !actualStartTime.equals(task.actualStartTime) : task.actualStartTime != null)
@@ -162,11 +212,14 @@ public class Task extends ObserverCoreImpl {
             return false;
         if (previousTask != null ? !previousTask.equals(task.previousTask) : task.previousTask != null) return false;
         if (process != null ? !process.equals(task.process) : task.process != null) return false;
+        if (workflow != null ? !workflow.equals(task.workflow) : task.workflow != null) return false;
         if (status != task.status) return false;
         if (successTask != null ? !successTask.equals(task.successTask) : task.successTask != null) return false;
         if (taskImplementer != null ? !taskImplementer.equals(task.taskImplementer) : task.taskImplementer != null)
             return false;
         if (taskUserGroup != null ? !taskUserGroup.equals(task.taskUserGroup) : task.taskUserGroup != null)
+            return false;
+        if (user != null ? !user.equals(task.user) : task.user != null)
             return false;
         if (type != task.type) return false;
 
@@ -178,9 +231,12 @@ public class Task extends ObserverCoreImpl {
         int result = status.hashCode();
         result = 31 * result + type.hashCode();
         result = 31 * result + (process != null ? process.hashCode() : 0);
+        result = 31 * result + (workflow != null ? workflow.hashCode() : 0);
         result = 31 * result + (taskImplementer != null ? taskImplementer.hashCode() : 0);
         result = 31 * result + (taskUserGroup != null ? taskUserGroup.hashCode() : 0);
+        result = 31 * result + (user != null ? user.hashCode() : 0);
         result = 31 * result + (groupTask ? 1 : 0);
+        result = 31 * result + (workflowTask ? 1 : 0);
         result = 31 * result + (plannedStartTime != null ? plannedStartTime.hashCode() : 0);
         result = 31 * result + (plannedEndTime != null ? plannedEndTime.hashCode() : 0);
         result = 31 * result + (actualStartTime != null ? actualStartTime.hashCode() : 0);
@@ -196,10 +252,13 @@ public class Task extends ObserverCoreImpl {
         return "Task{" +
                 "status=" + status +
                 ", type=" + type +
-                ", process=" + process +
+                ((!workflowTask)?", process=" + process:
+                ", workflow=" + workflow)+
                 ", taskImplementer=" + taskImplementer +
                 ", taskUserGroup=" + taskUserGroup +
+                ", user=" + user +
                 ", groupTask=" + groupTask +
+                ", workflowTask=" + workflowTask +
                 ", plannedStartTime=" + plannedStartTime +
                 ", plannedEndTime=" + plannedEndTime +
                 ", actualStartTime=" + actualStartTime +
