@@ -14,9 +14,10 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
-@Configuration 
-@ComponentScan("org.util.scheduler") 
+//@Configuration
+//@ComponentScan("org.util.scheduler")
 public class QuartzConfiguration {
+    /*
 	@Bean
 	public MethodInvokingJobDetailFactoryBean methodInvokingJobDetailFactoryBean() {
 		MethodInvokingJobDetailFactoryBean obj = new MethodInvokingJobDetailFactoryBean();
@@ -57,10 +58,10 @@ public class QuartzConfiguration {
 	}
 	
 	@Bean
-	private SchedulerFactoryBean schedulerFactoryBean() {
+	public SchedulerFactoryBean schedulerFactoryBean() {
 		SchedulerFactoryBean schedulerFactorybean = new SchedulerFactoryBean();
 		return schedulerFactorybean;
 	}
-	
+	  */
 	
 } 

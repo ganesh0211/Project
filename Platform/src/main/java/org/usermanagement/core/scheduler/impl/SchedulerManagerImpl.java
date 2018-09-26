@@ -100,10 +100,10 @@ public class SchedulerManagerImpl implements SchedulerManager {
         properties.put("org.quartz.jobStore.isClustered", clustered);
         properties.put("org.quartz.jobStore.dataSource", environment.getRequiredProperty("org.quartz.jobStore.dataSource"));
         properties.put("org.quartz.threadPool.threadCount", environment.getRequiredProperty("org.quartz.threadPool.threadCount"));
-        properties.put("org.quartz.dataSource.mysql.driver", environment.getRequiredProperty("jdbc.driverClassName"));
-        properties.put("org.quartz.dataSource.mysql.URL", environment.getRequiredProperty("jdbc.url"));
-        properties.put("org.quartz.dataSource.mysql.user", environment.getRequiredProperty("jdbc.username"));
-        properties.put("org.quartz.dataSource.mysql.password", environment.getRequiredProperty("jdbc.password"));
+        properties.put("org.quartz.dataSource.mysql.driver", environment.getRequiredProperty("hibernate.connection.driver_class"));
+        properties.put("org.quartz.dataSource.mysql.URL", environment.getRequiredProperty("hibernate.connection.url"));
+        properties.put("org.quartz.dataSource.mysql.user", environment.getRequiredProperty("hibernate.connection.username"));
+        properties.put("org.quartz.dataSource.mysql.password", environment.getRequiredProperty("hibernate.connection.password"));
         properties.put("org.quartz.dataSource.mysql.maxConnections", environment.getRequiredProperty("org.quartz.dataSource.mysql.maxConnections"));
         properties.put("org.quartz.jobStore.tablePrefix", environment.getRequiredProperty("org.quartz.jobStore.tablePrefix"));
         properties.put("org.quartz.jobStore.driverDelegateClass", environment.getRequiredProperty("org.quartz.jobStore.driverDelegateClass"));

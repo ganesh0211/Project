@@ -9,11 +9,16 @@ import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.init.DatabasePopulator;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.orm.hibernate4.HibernateTemplate;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
@@ -23,16 +28,48 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @PropertySource(value = {"classpath:application.properties"})
 public class HibernateConfiguration {
-
     @Autowired
     private Environment environment;
+    @Value("classpath:oAuth2DLL.sql")
+    private Resource oAuth2DDLScript;
+    @Value("classpath:SchemaCreator.sql")
+    private Resource schemaCreator;
+    @Value("classpath:oAuth2DML.sql")
+    private Resource oAuth2DMLScript;
+    @Value("classpath:QuartzDDL.sql")
+    private Resource quartzDDLScript;
+
+    public HibernateConfiguration() {}
+
+    @Bean
+    @Autowired
+    public DataSourceInitializer dataSourceInitializer(DataSource defaultDataSource, DatabasePopulator databasePopulator){
+        System.out.print("datasource init");
+        DataSourceInitializer initializer = new DataSourceInitializer();
+        initializer.setDataSource(defaultDataSource);
+        initializer.setDatabasePopulator(databasePopulator);
+        return initializer;
+    }
+
+    @Bean
+    public DatabasePopulator databasePopulator(){
+        ResourceDatabasePopulator dataPopulate = new ResourceDatabasePopulator();
+        if ("create".equalsIgnoreCase(this.environment.getRequiredProperty("hibernate.hbm2ddl.auto")))
+        {
+            dataPopulate.addScript(this.schemaCreator);
+            dataPopulate.addScript(this.oAuth2DDLScript);
+            dataPopulate.addScript(this.quartzDDLScript);
+            dataPopulate.addScript(this.oAuth2DMLScript);
+        }
+        return dataPopulate;
+    }
 
     @Bean
     public LocalSessionFactoryBean defaultSessionFactory() {
         System.out.print("HIBERNATAE_LOADING_CALLED");
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(defaultDataSource());
-        sessionFactory.setPackagesToScan(new String[]{"org.model.usermanagement", "org.model.workflow"});
+        sessionFactory.setPackagesToScan(new String[]{ "org.model.usermanagement", "org.model.workflow", "org.model.util" });
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
@@ -59,6 +96,8 @@ public class HibernateConfiguration {
         if ("create".equalsIgnoreCase(properties.getProperty("hibernate.hbm2ddl.auto"))) {
             properties.put("hibernate.hbm2ddl.import_files", environment.getRequiredProperty("hibernate.hbm2ddl.import_files"));
         }
+        //properties.put("hibernate.connection.verifyServerCertificate", this.environment.getRequiredProperty("hibernate.connection.verifyServerCertificate"));
+        //properties.put("hibernate.connection.useSSL", this.environment.getRequiredProperty("hibernate.connection.useSSL"));
         return properties;
     }
 

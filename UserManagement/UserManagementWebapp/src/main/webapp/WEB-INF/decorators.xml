@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/decorators/">
+
+    <excludes>
+        <pattern>/users</pattern>
+        <pattern>/ajax/**</pattern>
+    </excludes>
+
+    <decorator name="default" page="/WEB-INF/views/layouts/default.jsp">
+        <pattern>/home</pattern>
+    </decorator>
+    <decorator name="welcome" page="/WEB-INF/views/layouts/default.jsp">
+        <pattern>/welcome*</pattern>
+    </decorator>
+    <decorator name="oauthAuthorize" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
+        <pattern>/oauth/authorize**</pattern>
+    </decorator>
+    <decorator name="oauth" page="/WEB-INF/views/layouts/oauth.jsp">
+        <pattern>/oauth/**</pattern>
+    </decorator>
+
+    <decorator name="all" page="/WEB-INF/views/layouts/default.jsp">
+        <pattern>/userInfo/**</pattern>
+    </decorator>
+    <!-- Error Page -->
+    <decorator name="error" page="/WEB-INF/views/layouts/error.jsp">
+        <pattern>/error/**</pattern>
+    </decorator>
+
+    <decorator name="all" page="/WEB-INF/views/layouts/default.jsp">
+        <pattern>/**</pattern>
+    </decorator>
+    <decorator name="login" page="/WEB-INF/views/layouts/login.jsp">
+        <pattern>/login*</pattern>
+    </decorator>
+
+
+
+</decorators>

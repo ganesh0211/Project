@@ -133,4 +133,38 @@ public class PersistenceHandlerImpl implements PersistenceHandler {
             }
         }
     }
+
+    public List<?> getAllObjects(Class entity) throws BaseException{
+        Session session = null;
+        try{
+            session = this.hibernateUtils.getSession();
+            Query query = session.createQuery("from " + entity.getName() + " as entity");
+            return query.list();
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new BaseException(Database.SEARCH_FAILED);
+        }finally{
+            if (session != null){
+                session.flush();
+                session.close();
+            }
+        }
+    }
+
+    public List<?> getAllObjectsByCondition(Class entity, String condition)throws BaseException{
+        Session session = null;
+        try{
+            session = this.hibernateUtils.getSession();
+            Query query = session.createQuery("from " + entity.getName() + " as entity where " + condition);
+            return query.list();
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new BaseException(Database.SEARCH_FAILED);
+        }finally{
+            if (session != null){
+                session.flush();
+                session.close();
+            }
+        }
+    }
 }

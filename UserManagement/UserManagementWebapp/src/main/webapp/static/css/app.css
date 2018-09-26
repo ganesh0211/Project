@@ -4,6 +4,19 @@ html {
 
 body, #mainWrapper {
     height: 100%;
+    width: 99%;
+    /*background-image: -webkit-gradient(linear, right bottom, right top, color-stop(0, #EDEDED), color-stop(0.08, #EAEAEA), color-stop(1, #2F2F2F), color-stop(1, #AAAAAA));
+    background-image: -o-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
+    background-image: -moz-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
+    background-image: -webkit-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
+    background-image: -ms-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
+    background-image: linear-gradient(to top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%); */
+    background-color: #f5f5f5;
+}
+
+.gradientColor{
+    width: 100%;
+    height: 100%;
     background-image: -webkit-gradient(linear, right bottom, right top, color-stop(0, #EDEDED), color-stop(0.08, #EAEAEA), color-stop(1, #2F2F2F), color-stop(1, #AAAAAA));
     background-image: -o-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
     background-image: -moz-linear-gradient(top, #EDEDED 0%, #EAEAEA 8%, #2F2F2F 100%, #AAAAAA 100%);
@@ -23,6 +36,11 @@ body, #mainWrapper, .form-control {
     padding-bottom: 10px;
 }
 
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+
 #authHeaderWrapper {
     clear: both;
     width: 100%;
@@ -33,17 +51,317 @@ body, #mainWrapper, .form-control {
 
 .login-container {
     margin-top: 100px;
-    background-color: floralwhite;
-    width: 40%;
-    left: 30%;
+    width: 25%;
+    left: 5%;
     position: absolute;
 }
 
 .login-card {
-    width: 80%;
+    width: 92%;
     margin: auto;
+}
+
+.headerBand {
+    background-color: darkblue;
+    width: 100%;
+    height: 10%;
 }
 
 .login-form {
     padding: 10%;
+}
+
+.headerBigFont{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.headerMediumFont{
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.headerSmallFont{
+    font-size: 7px;
+    font-weight: bold;
+}
+
+.descriptionFont{
+    font-size: 14px;
+    color: #999999;
+}
+
+.descriptionMediumFont{
+    font-size: 10px;
+    color: #999999;
+}
+
+.descriptionSmallFont{
+    font-size: 7px;
+    color: #999999;
+}
+
+.icon-s-1{
+    height: 32px;
+    width: 32px;
+}
+
+.icon-s-2{
+    height: 40px;
+    width: 40px;
+}
+
+.icon-s-3{
+    height: 50px;
+    width: 50px;
+}
+
+.icon-s-4{
+    height: 60px;
+    width: 60px;
+}
+
+.icon-s-5{
+    height: 75px;
+    width: 75px;
+}
+
+.icon-s-6{
+    height: 90px;
+    width: 90px;
+}
+
+.icon-s-7{
+    height: 100px;
+    width: 100px;
+}
+
+.icon-s-8{
+    height: 115px;
+    width: 115px;
+}
+
+.icon-s-9{
+    height: 128px;
+    width: 128px;
+}
+
+.padding-s-0{
+    padding: 0;
+}
+
+.padding-s-5{
+    padding: 5px;
+}
+
+.padding-s-10{
+    padding: 10px;
+}
+
+.padding-s-20{
+    padding: 20px;
+}
+
+.navbar-login
+{
+    width: 305px;
+    padding: 10px;
+    padding-bottom: 0px;
+}
+
+.navbar-login-session
+{
+    padding: 10px;
+    padding-bottom: 0px;
+    padding-top: 0px;
+}
+
+.icon-size
+{
+    font-size: 87px;
+}
+
+<!-- Side toggle bar styles -->
+
+.row{
+    margin-left:0px;
+    margin-right:0px;
+}
+
+#wrapper {
+    padding-left: 70px;
+    transition: all .4s ease 0s;
+    height: 100%
+}
+
+#sidebar-wrapper {
+    margin-left: -250px;
+    left: 70px;
+    width: 250px;
+    background: #222;
+    position: fixed;
+    height: 100%;
+    z-index: 100;
+    transition: all .4s ease 0s;
+}
+
+.sidebar-nav {
+    display: block;
+    float: left;
+    width: 250px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#page-content-wrapper {
+    padding-left: 0;
+    margin-left: 0;
+    width: 100%;
+    height: auto;
+}
+
+#wrapper.active {
+    padding-left: 250px;
+}
+
+#wrapper.active #sidebar-wrapper {
+    left: 250px;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    padding: 40px;
+}
+
+
+#sidebar_menu li a, .sidebar-nav li a {
+    color: #999;
+    display: block;
+    float: left;
+    text-decoration: none;
+    width: 250px;
+    background: #252525;
+    border-top: 1px solid #373737;
+    border-bottom: 1px solid #1A1A1A;
+    -webkit-transition: background .5s;
+    -moz-transition: background .5s;
+    -o-transition: background .5s;
+    -ms-transition: background .5s;
+    transition: background .5s;
+}
+
+.sidebar_name {
+    padding-top: 25px;
+    color: #fff;
+    opacity: .7;
+}
+
+.sidebar-nav li {
+    line-height: 40px;
+    text-indent: 20px;
+}
+
+.sidebar-nav li a {
+    color: #999999;
+    display: block;
+    text-decoration: none;
+}
+
+.sidebar-nav li a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    text-decoration: none;
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand {
+    height: 65px;
+    line-height: 60px;
+    font-size: 18px;
+}
+
+.sidebar-nav > .sidebar-brand a {
+    color: #999999;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+    color: #fff;
+    background: none;
+}
+
+#main_icon
+{
+    float:right;
+    padding-right: 30px;
+    padding-top:20px;
+}
+.sub_icon
+{
+    float:right;
+    padding-right: 30px;
+    padding-top:10px;
+}
+.content-header {
+    height: 65px;
+    line-height: 65px;
+}
+
+.content-header h1 {
+    margin: 0;
+    margin-left: 20px;
+    line-height: 65px;
+    display: inline-block;
+}
+
+@media (max-width:767px) {
+    #wrapper {
+        padding-left: 70px;
+        transition: all .4s ease 0s;
+    }
+    #sidebar-wrapper {
+        left: 70px;
+    }
+    #wrapper.active {
+        padding-left: 250px;
+    }
+    #wrapper.active #sidebar-wrapper {
+        left: 250px;
+        width: 250px;
+        transition: all .4s ease 0s;
+    }
+}
+
+.auto-scroll-y{
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.auto-scroll-x{
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.auto-scroll-x-y{
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.scroll-y{
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.scroll-x{
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+.scroll-x-y{
+    overflow-x: scroll;
+    overflow-y: scroll;
 }

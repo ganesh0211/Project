@@ -43,4 +43,21 @@ public interface PersistenceHandler {
      * @return
      */
     public List<?> getObjectByProperty(Class entity, String property, String value) throws BaseException;
+
+    /**
+     *
+     * @param entity
+     * @return
+     * @throws BaseException
+     */
+    public List<?> getAllObjects(Class entity) throws BaseException;
+
+    /**
+     *
+     * @param entity
+     * @param condition
+     * @return
+     * @throws BaseException
+     */
+    public List<?> getAllObjectsByCondition(Class entity, String condition) throws BaseException;
 }

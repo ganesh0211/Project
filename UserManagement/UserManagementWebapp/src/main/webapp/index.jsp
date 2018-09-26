@@ -15,7 +15,7 @@
     user.setPassword("ABC");
     user.setContactNumber("917293712");
     user.setContactEmail("A@A.com");
-    persistenceHandler.saveObject(user);
+    persistenceHandler.saveObject(null,user);
 
 %>
 </body>

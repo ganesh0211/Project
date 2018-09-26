@@ -14,7 +14,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  *
  * @author www.codejava.net
  */
-public class SpringWebAppInitializer implements WebApplicationInitializer {
+public class SpringWebAppInitializer {/*implements WebApplicationInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
@@ -28,5 +28,5 @@ public class SpringWebAppInitializer implements WebApplicationInitializer {
         dispatcher.addMapping("/");
         System.out.println("\n\n\n On Start Up Ended \n\n\n");
     }
-
+          */
 }
