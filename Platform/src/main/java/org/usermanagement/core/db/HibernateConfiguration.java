@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -54,9 +55,10 @@ public class HibernateConfiguration {
     @Bean
     public DatabasePopulator databasePopulator(){
         ResourceDatabasePopulator dataPopulate = new ResourceDatabasePopulator();
-        if ("create".equalsIgnoreCase(this.environment.getRequiredProperty("hibernate.hbm2ddl.auto")))
+        if (this.environment.getRequiredProperty("hibernate.hbm2ddl.auto")!= null &&
+                this.environment.getRequiredProperty("hibernate.hbm2ddl.auto").startsWith("create"))
         {
-            dataPopulate.addScript(this.schemaCreator);
+//            dataPopulate.addScript(this.schemaCreator);
             dataPopulate.addScript(this.oAuth2DDLScript);
             dataPopulate.addScript(this.quartzDDLScript);
             dataPopulate.addScript(this.oAuth2DMLScript);
@@ -65,11 +67,14 @@ public class HibernateConfiguration {
     }
 
     @Bean
+    @Autowired
+    @DependsOn({"dataSourceInitializer"})
     public LocalSessionFactoryBean defaultSessionFactory() {
         System.out.print("HIBERNATAE_LOADING_CALLED");
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(defaultDataSource());
         sessionFactory.setPackagesToScan(new String[]{ "org.model.usermanagement", "org.model.workflow", "org.model.util" });
+
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }

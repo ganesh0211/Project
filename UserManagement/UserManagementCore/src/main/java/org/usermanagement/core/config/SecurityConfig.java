@@ -47,6 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public SecurityConfig() {}
 
     @DependsOn({"userDetailsService"})
+    @Autowired
     public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception{
         auth.userDetailsService(userDetailsService);
         auth.authenticationProvider(authenticationProvider());
@@ -55,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http)throws Exception {
         System.out.println("\n\n\n Security Config Configure Started \n\n\n");
-        http.authorizeRequests().antMatchers("/login", "/saveDummyRootUser", "/error/**", "/static/**").permitAll();
+        http.authorizeRequests().antMatchers("/login","/saveDummyRootUser", "/error/**", "/static/**").permitAll();
         http.authorizeRequests().antMatchers("/", "/home", "/userInfo/**").authenticated();
                 http.formLogin().loginPage("/login").defaultSuccessUrl("/home")
                 .usernameParameter("ssoId").passwordParameter("password").and()

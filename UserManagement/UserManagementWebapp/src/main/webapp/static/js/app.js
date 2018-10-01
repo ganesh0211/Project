@@ -36,6 +36,56 @@ function getUserData() {
     } );
 }
 
+function getAccessToken(code,redirect_uri){
+    $.ajax({
+        url: "../oauth/token",
+        method: "POST",
+        crossDomain: true,
+        data: {
+            grant_type:"authorization_code",
+            code:code,
+            redirect_uri: redirect_uri
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader ("Authorization", "Basic " + btoa("client1" + ":" + "secret1"));
+        },
+        statusCode: {
+            200: function(response) {
+               alert(response)   ;
+            },
+            401: function() {
+                alert("The username or password were not correct. Try again.");
+            }
+        }
+    });
+}
+function getAuthCode(client_id,secret,redirect_uri,username,password,scope){
+    $.ajax({
+        url: "../oauth/authorize",
+        method: "POST",
+        crossDomain: true,
+        data: {
+            client_id : client_id,
+            password: secret,
+            redirect_uri: redirect_uri,
+            response_type:"code",
+            scope:scope
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" +password));
+        },
+        statusCode: {
+            200: function(response) {
+                $('#oathAuthorizeContent').html(response);
+                //auth.login(response.accessToken, response.accessTokenExpiration);
+            },
+            401: function() {
+                alert("The username or password were not correct. Try again.");
+            }
+        }
+    });
+}
+
 function initUserOperations(){
 
 

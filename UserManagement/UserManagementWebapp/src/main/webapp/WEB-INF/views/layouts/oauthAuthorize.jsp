@@ -16,7 +16,7 @@
 </head>
 <body style='font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif' <decorator:getProperty property="body.onload" writeEntireProperty="true"/>>
 <div id="oathAuthorizationView" class="panel panel-info" style="width:400px;">
-    <div class="panel-heading">Request for OAuth Authorization [<b><%=request.getParameter("client_id")%></b>] </div>
+    <div class="panel-heading">Request for OAuth Authorization [<b>${client_id}</b>] </div>
     <div class="panel-body" style="background-color:#EEEEEE;">
         <form>
             <div class="row">
@@ -29,18 +29,15 @@
                     </div>
                 </div>
             </div>
-            <%User user = (SecurityContextHolder.getContext().getAuthentication() != null )? (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal() :null;%>
-            <% if(user != null) { %>
                 <div class="row" style="line-height: 30px; margin-top: 5px;">
                     <img class="col-sm-3"  src="<c:url value='../static/images/administrator.png' />" title="Logged User" height="40px" width="40px">
                     <div class="headerMediumFont col-sm-6" style="line-height: 100%;">
-                        <%=user.getUsername()%>
+                      ${loggedUserFullName}
                         <div class="descriptionSmallFont" >
-                            Role: <%=user.getAuthorities()%>
+                            Role: ${loggedUserAuthority}
                         </div>
                     </div>
                 </div>
-            <%}%>
         </form>
     </div>
     <div class="panel-footer">
@@ -53,7 +50,6 @@
 </div>
 
 </div>
-<div id="oathAuthorizeContent" class="hidden">
     <decorator:body />
 </div>
 </body>

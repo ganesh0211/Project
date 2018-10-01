@@ -32,6 +32,12 @@ import javax.sql.DataSource;
  * Date: 26/9/18
  * Time: 2:52 PM
  * To change this template use File | Settings | File Templates.
+ * The URL paths provided by the framework are /oauth/authorize (the authorization endpoint),
+ * /oauth/token (the token endpoint),
+ * /oauth/confirm_access (user posts approval for grants here),
+ * /oauth/error (used to render errors in the authorization server),
+ * /oauth/check_token (used by Resource Servers to decode access tokens),
+ * and /oauth/token_key (exposes public key for token verification if using JWT tokens).
  */
 
 @Configuration
@@ -49,30 +55,28 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     @Autowired
     private DefaultAccessTokenConverter defaultAccessTokenConverter;
 
-    public OAuth2Config() {}
+    public OAuth2Config() {
+    }
 
     public void configure(AuthorizationServerEndpointsConfigurer endpoints)
-            throws Exception
-    {
-        endpoints.accessTokenConverter(this.defaultAccessTokenConverter).tokenStore(this.tokenStore).userApprovalHandler(this.userApprovalHandler).authenticationManager(this.oAuth2authenticationManager);
+            throws Exception {
+        endpoints.accessTokenConverter(this.defaultAccessTokenConverter).
+                tokenStore(this.tokenStore).userApprovalHandler(this.userApprovalHandler).authenticationManager(this.oAuth2authenticationManager);
     }
 
     public void configure(AuthorizationServerSecurityConfigurer oauthServer)
-            throws Exception
-    {
+            throws Exception {
         oauthServer.checkTokenAccess("permitAll()");
     }
 
     public void configure(ClientDetailsServiceConfigurer clients)
-            throws Exception
-    {
+            throws Exception {
         clients.withClientDetails(this.clientDetailsService);
     }
 
     @Bean
     @Autowired
-    public AuthenticationManager oAuth2authenticationManager(ClientDetailsService clientDetailsService, ResourceServerTokenServices resourceServerTokenServices)
-    {
+    public AuthenticationManager oAuth2authenticationManager(ClientDetailsService clientDetailsService, ResourceServerTokenServices resourceServerTokenServices) {
         OAuth2AuthenticationManager oAuth2authenticationManager = new OAuth2AuthenticationManager();
         oAuth2authenticationManager.setClientDetailsService(clientDetailsService);
         oAuth2authenticationManager.setTokenServices(resourceServerTokenServices);
@@ -81,8 +85,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     @Autowired
-    public ClientDetailsService clientDetailsService(@Qualifier("defaultDataSource") DataSource dataSource, @Qualifier("passwordEncoder") PasswordEncoder passwordEncoder)
-    {
+    public ClientDetailsService clientDetailsService(@Qualifier("defaultDataSource") DataSource dataSource, @Qualifier("passwordEncoder") PasswordEncoder passwordEncoder) {
         JdbcClientDetailsService clientDetailsService = new JdbcClientDetailsService(dataSource);
         clientDetailsService.setPasswordEncoder(passwordEncoder);
         return clientDetailsService;
@@ -90,8 +93,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     @Autowired
-    public ResourceServerTokenServices resourceServerTokenServices(ClientDetailsService clientDetailsService, TokenStore tokenStore)
-    {
+    public ResourceServerTokenServices resourceServerTokenServices(ClientDetailsService clientDetailsService, TokenStore tokenStore) {
         DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setClientDetailsService(clientDetailsService);
         defaultTokenServices.setTokenStore(tokenStore);
@@ -101,23 +103,20 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     @Autowired
-    public TokenStore tokenStore(@Qualifier("defaultDataSource") DataSource dataSource, AuthenticationKeyGenerator authenticationKeyGenerator)
-    {
+    public TokenStore tokenStore(@Qualifier("defaultDataSource") DataSource dataSource, AuthenticationKeyGenerator authenticationKeyGenerator) {
         JdbcTokenStore tokenStore = new JdbcTokenStore(dataSource);
         tokenStore.setAuthenticationKeyGenerator(authenticationKeyGenerator);
         return tokenStore;
     }
 
     @Bean
-    public AuthenticationKeyGenerator authenticationKeyGenerator()
-    {
+    public AuthenticationKeyGenerator authenticationKeyGenerator() {
         return new CustomAuthenticationKeyGenerator("SHA-256");
     }
 
     @Bean
     @Autowired
-    public TokenStoreUserApprovalHandler userApprovalHandler(DefaultOAuth2RequestFactory defaultOAuth2RequestFactory, TokenStore tokenStore, ClientDetailsService clientDetailsService)
-    {
+    public TokenStoreUserApprovalHandler userApprovalHandler(DefaultOAuth2RequestFactory defaultOAuth2RequestFactory, TokenStore tokenStore, ClientDetailsService clientDetailsService) {
         TokenStoreUserApprovalHandler tokenStoreUserApprovalHandler = new TokenStoreUserApprovalHandler();
         tokenStoreUserApprovalHandler.setRequestFactory(defaultOAuth2RequestFactory);
         tokenStoreUserApprovalHandler.setTokenStore(tokenStore);
@@ -127,14 +126,12 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     @Autowired
-    public DefaultOAuth2RequestFactory defaultOAuth2RequestFactory(ClientDetailsService clientDetailsService)
-    {
+    public DefaultOAuth2RequestFactory defaultOAuth2RequestFactory(ClientDetailsService clientDetailsService) {
         return new DefaultOAuth2RequestFactory(clientDetailsService);
     }
 
     @Bean
-    public DefaultAccessTokenConverter defaultAccessTokenConverter()
-    {
+    public DefaultAccessTokenConverter defaultAccessTokenConverter() {
         return new DefaultAccessTokenConverter();
     }
 }

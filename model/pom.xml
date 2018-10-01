@@ -49,7 +49,7 @@
                     <componentProperties>
                         <revengfile>src/main/resources/hibernate-rev.xml</revengfile>
                         <propertyfile>../Platform/src/main/resources/application.properties</propertyfile>
-                        <packagename>org.model.scheduler</packagename>
+                        <packagename>org.model.util</packagename>
                         <jdk5>true</jdk5>
                         <ejb3>true</ejb3>
                         <drop>true</drop>

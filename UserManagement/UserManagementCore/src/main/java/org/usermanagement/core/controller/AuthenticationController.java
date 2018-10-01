@@ -159,16 +159,36 @@ public class AuthenticationController {
     {
         System.out.print("ACCESSING HOME PAGE");
         String username = getPrincipal();
-        addUserDetails(username, model);
+        addUserDetails(username, model, null);
         model.addAttribute("greeting", "Hi " + getPrincipal() + ", Welcome to mysite");
         return "home";
+    }
+
+    @RequestMapping({"/oauth2/authorize"})
+    public String authorize(HttpServletRequest request, HttpServletResponse response, ModelMap model)
+    {
+        System.out.print("ACCESSING authorize PAGE");
+        String username = getPrincipal();
+        addUserDetails(username, model, request);
+        model.addAttribute("greeting", "Hi " + getPrincipal() + ", Welcome to mysite");
+        return "/oauth2/getAuthorization";
+    }
+
+    @RequestMapping({"/oauth2/accessToken"})
+    public String accessToken(HttpServletRequest request, HttpServletResponse response, ModelMap model)
+    {
+        System.out.print("ACCESSING authorize PAGE");
+        String username = getPrincipal();
+        addUserDetails(username, model, request);
+        model.addAttribute("greeting", "Hi " + getPrincipal() + ", Welcome to mysite");
+        return "/oauth2/accessToken";
     }
 
     @RequestMapping({"/userInfo/manage"})
     public String allUserData(ModelMap model)
     {
         String username = getPrincipal();
-        addUserDetails(username, model);
+        addUserDetails(username, model, null);
         return "/userInfo/allUserData";
     }
 
@@ -250,11 +270,13 @@ public class AuthenticationController {
 
     private boolean isCurrentAuthenticationAnonymous()
     {
+        System.out.print("Check is Current auth.****************************************\n");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.print("After Check is Current auth.****************************************\n"+authentication.isAuthenticated()+" "+authentication.getDetails()+" "+authenticationTrustResolver.isAnonymous(authentication)) ;
         return this.authenticationTrustResolver.isAnonymous(authentication);
     }
 
-    private User addUserDetails(String username, ModelMap modelMap)
+    private User addUserDetails(String username, ModelMap modelMap,HttpServletRequest request)
     {
         modelMap.put("loggedUser", username);
         User user = null;
@@ -266,8 +288,20 @@ public class AuthenticationController {
 
             modelMap.put("loggedUserAuthority", user.getRole() != null ? user.getRole().getName() : "");
             modelMap.put("loggedUserId", Long.valueOf(user.getId()));
+            modelMap.put("loggedPassword", user.getPassword());
+            if(request != null && request.getParameter("client_id") != null) {
+                modelMap.put("client_id",request.getParameter("client_id"));
+            }
+            if(request != null && request.getParameter("client_secret") != null) {
+                modelMap.put("client_secret",request.getParameter("client_secret"));
+            }
+            if(request != null && request.getParameter("code") != null) {
+                modelMap.put("code",request.getParameter("code"));
+            }
+
+
         }
-        catch (BusinessException b) {}catch (ApplicationException a) {}
+        catch (BusinessException b) {b.printStackTrace();}catch (ApplicationException a) {a.printStackTrace();} catch (Exception e) {e.printStackTrace();}
         return user;
     }
 }

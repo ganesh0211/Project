@@ -19,13 +19,14 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
  * To change this template use File | Settings | File Templates.
  */
 
+
 @Configuration
 @EnableResourceServer
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
     public ResourceServerConfiguration() {}
 
     public void configure(HttpSecurity http) throws Exception {
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).maximumSessions(1);
-        ((ExpressionUrlAuthorizationConfigurer.AuthorizedUrl)((HttpSecurity.RequestMatcherConfigurer)http.requestMatchers().antMatchers(new String[] { "/admin/beans" })).and().authorizeRequests().anyRequest()).access("#oauth2.hasScope('read')");
+        http.antMatcher("/me")
+                .authorizeRequests().anyRequest().authenticated();
     }
 }

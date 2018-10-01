@@ -1,5 +1,5 @@
-package org.model.scheduler;
-// Generated 26 Sep, 2018 8:49:36 PM by Hibernate Tools 3.2.2.GA
+package org.model.util;
+// Generated 1 Oct, 2018 5:40:34 PM by Hibernate Tools 3.2.2.GA
 
 
 import java.math.BigDecimal;

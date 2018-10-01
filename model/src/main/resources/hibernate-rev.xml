@@ -2,5 +2,7 @@
 <!DOCTYPE hibernate-reverse-engineering SYSTEM "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd">
 <hibernate-reverse-engineering>
     <schema-selection match-schema="USERMANAGER" match-table="QRTZ_.*"/>
-    <!--<table-filter match-name="QRTZ*"  />-->
+    <schema-selection match-schema="USERMANAGER" match-table="oauth.*"/>
+    <schema-selection match-schema="USERMANAGER" match-table="ClientDetails"/>
+
 </hibernate-reverse-engineering>

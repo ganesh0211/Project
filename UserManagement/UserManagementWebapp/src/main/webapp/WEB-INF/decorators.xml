@@ -4,6 +4,7 @@
     <excludes>
         <pattern>/users</pattern>
         <pattern>/ajax/**</pattern>
+        <pattern>/oauth/**</pattern>
     </excludes>
 
     <decorator name="default" page="/WEB-INF/views/layouts/default.jsp">
@@ -12,11 +13,15 @@
     <decorator name="welcome" page="/WEB-INF/views/layouts/default.jsp">
         <pattern>/welcome*</pattern>
     </decorator>
-    <decorator name="oauthAuthorize" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
+  <!--  <decorator name="oauthAuthorize" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
         <pattern>/oauth/authorize**</pattern>
     </decorator>
-    <decorator name="oauth" page="/WEB-INF/views/layouts/oauth.jsp">
-        <pattern>/oauth/**</pattern>
+    -->
+    <decorator name="oauth_Auth" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
+        <pattern>/oauth2/authorize**</pattern>
+    </decorator>
+    <decorator name="oauth_Access" page="/WEB-INF/views/layouts/default.jsp">
+        <pattern>/oauth2/accessToken**</pattern>
     </decorator>
 
     <decorator name="all" page="/WEB-INF/views/layouts/default.jsp">

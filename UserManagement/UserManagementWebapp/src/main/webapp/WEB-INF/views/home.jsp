@@ -5,5 +5,10 @@
 </head>
 <body>
 Greeting : ${greeting}
+
+<form action="../oauth/token" method="POST">
+    <input type="button" value="Auth" onclick="getAuthCode()">
+    <input type="button" value="token" onclick="getAccessToken()">
+</form>
 </body>
 </html>
