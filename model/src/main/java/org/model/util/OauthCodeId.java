@@ -1,5 +1,5 @@
 package org.model.util;
-// Generated 1 Oct, 2018 5:40:34 PM by Hibernate Tools 3.2.2.GA
+// Generated 2 Oct, 2018 11:19:34 AM by Hibernate Tools 3.2.2.GA
 
 
 import java.util.Arrays;

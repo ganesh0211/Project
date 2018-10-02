@@ -1,5 +1,6 @@
 package org.usermanagement.core.config;
 
+import org.hibernate.TransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,12 +18,12 @@ import org.springframework.security.oauth2.provider.approval.UserApprovalHandler
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.token.AuthenticationKeyGenerator;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.ResourceTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -133,5 +134,29 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     @Bean
     public DefaultAccessTokenConverter defaultAccessTokenConverter() {
         return new DefaultAccessTokenConverter();
+    }
+    @Bean
+    public PlatformTransactionManager annotationDrivenTransactionManager() {
+        return new ResourceTransactionManager() {
+            @Override
+            public Object getResourceFactory() {
+                return null;
+            }
+
+            @Override
+            public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+                return null;
+            }
+
+            @Override
+            public void commit(TransactionStatus status) throws TransactionException {
+
+            }
+
+            @Override
+            public void rollback(TransactionStatus status) throws TransactionException {
+
+            }
+        };
     }
 }

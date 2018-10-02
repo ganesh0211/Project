@@ -57,7 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http)throws Exception {
         System.out.println("\n\n\n Security Config Configure Started \n\n\n");
         http.authorizeRequests().antMatchers("/login","/saveDummyRootUser", "/error/**", "/static/**").permitAll();
-        http.authorizeRequests().antMatchers("/", "/home", "/userInfo/**").authenticated();
+        http.authorizeRequests().antMatchers("/","/oauth2/**", "/home", "/userInfo/**").authenticated();
                 http.formLogin().loginPage("/login").defaultSuccessUrl("/home")
                 .usernameParameter("ssoId").passwordParameter("password").and()
                 .rememberMe().rememberMeParameter("remember-me").tokenRepository(tokenRepository).tokenValiditySeconds(86400).and()
