@@ -12,17 +12,7 @@
 <%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator" %>
 <html>
 <head>
-    <%String contextPath = request.getContextPath()+"/";%>
-    <link href="<%=contextPath%><c:url value='static/css/bootstrap.min.css' />" rel="stylesheet"></link>
-    <link href="<%=contextPath%><c:url value='static/css/app.css' />" rel="stylesheet"></link>
-    <link rel="stylesheet" type="text/css"
-          href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
-    <script src="<%=contextPath%><c:url value='static/js/jQuery.min.js' />"></script>
-    <script src="<%=contextPath%><c:url value='static/js/bootstrap.min.js' />"></script>
-    <script src="<%=contextPath%><c:url value='static/js/jquery.dataTables.min.js' />"></script>
-    <script src="<%=contextPath%><c:url value='static/js/bootstrap.dataTables.min.js' />"></script>
-    <script src="<%=contextPath%><c:url value='static/js/menu.js' />"></script>
-    <script src="<%=contextPath%><c:url value='static/js/app.js' />"></script>
+    <jsp:include page="../layouts/resource.jsp" />
 </head>
 <body style='font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif' onload="getAuthCode('${client_id}','${client_secret}','http://localhost:8080/Dashboard/oauth2/accessToken','${loggedUserId}','${loggedPassword}','read')">
 <div id="oathAuthorizationView" class="panel panel-info" style="width:400px;">
@@ -63,6 +53,7 @@
 
 </div>
 <div id="oathAuthorizeContent" class="hidden">
+    <form id='confirmationForm' name='confirmationForm' action='/Dashboard/oauth/authorize' method='post'><input name='user_oauth_approval' value='true' type='hidden'/><label><input name='authorize' value='Authorize' type='submit'/></label></form><form id='denialForm' name='denialForm' action='/Dashboard/oauth/authorize' method='post'><input name='user_oauth_approval' value='false' type='hidden'/><label><input name='deny' value='Deny' type='submit'/></label></form>
 </div>
 </body>
 </html>

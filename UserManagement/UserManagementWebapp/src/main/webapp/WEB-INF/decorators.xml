@@ -14,18 +14,6 @@
     <decorator name="welcome" page="/WEB-INF/views/layouts/default.jsp">
         <pattern>/welcome*</pattern>
     </decorator>
-  <!--  <decorator name="oauthAuthorize" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
-        <pattern>/oauth/authorize**</pattern>
-    </decorator>
-
-    <decorator name="oauth_Auth" page="/WEB-INF/views/layouts/oauthAuthorize.jsp">
-        <pattern>/oauth2/authorize**</pattern>
-    </decorator>
-    ssssss
-    <decorator name="oauth_Access" page="/WEB-INF/views/layouts/default.jsp">
-        <pattern>/oauth2/accessToken**</pattern>
-    </decorator>
-         -->
     <decorator name="all" page="/WEB-INF/views/layouts/default.jsp">
         <pattern>/userInfo/**</pattern>
     </decorator>

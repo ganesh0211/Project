@@ -76,8 +76,11 @@ function getAuthCode(client_id,secret,redirect_uri,username,password,scope){
         },
         statusCode: {
             200: function(response) {
-                $('#oathAuthorizeContent').html(response);
+                //$('#oathAuthorizeContent').html(response);
                 //auth.login(response.accessToken, response.accessTokenExpiration);
+            },
+            302: function(response) {
+                alert("Already authorized");
             },
             401: function() {
                 alert("The username or password were not correct. Try again.");
