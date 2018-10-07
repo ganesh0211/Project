@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .rememberMe().rememberMeParameter("remember-me").tokenRepository(tokenRepository).tokenValiditySeconds(86400).and()
                 .exceptionHandling().accessDeniedPage("/Access_Denied");
         http.csrf().disable();
+        // CSRF tokens handling
+        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
         System.out.println("\n\n\n Security Config Configure Ended \n\n\n");
     }
     /*@Autowired
@@ -128,4 +131,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         accessDecisionVoterList.add(decisionVoter);
         return new UnanimousBased(accessDecisionVoterList);
     }
+
 }

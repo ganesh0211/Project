@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -50,11 +51,11 @@ public class AuthenticationController {
     private ObjectConstructor objectConstructor;
     private Gson gson = new Gson();
 
-    public AuthenticationController() {}
+    public AuthenticationController() {
+    }
 
     @RequestMapping({"/"})
-    public String getDefaultUrl()
-    {
+    public String getDefaultUrl() {
         if (isCurrentAuthenticationAnonymous()) {
             return "login";
         }
@@ -63,10 +64,8 @@ public class AuthenticationController {
 
     @RequestMapping({"/saveDummyRootUser"})
     @ResponseBody
-    public String saveDummyRootUser()
-    {
-        try
-        {
+    public String saveDummyRootUser() {
+        try {
             this.schedulerManager.createJob("TEST", "GROUP", true, "0/10 * * * * ?", 0, new HashMap(), SimpleJobCheck.class);
             Thread.sleep(20000L);
             System.out.print("PAUSE CALL");
@@ -77,21 +76,16 @@ public class AuthenticationController {
             Thread.sleep(20000L);
             System.out.print("DELETE CALL");
             this.schedulerManager.deleteJob("TEST", "GROUP");
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         User user = new User();
         Role role = new Role();
         role.setDescription("Admin");
         role.setName("Admin");
-        try
-        {
+        try {
             role = this.roleManager.saveRole(role);
-        }
-        catch (ApplicationException applicationException)
-        {
+        } catch (ApplicationException applicationException) {
             return applicationException.getExceptions().toString();
         }
         user.setRole(role);
@@ -99,36 +93,28 @@ public class AuthenticationController {
         user.setPassword("ROOT");
         user.setContactEmail("Root@usermanagement.org");
         user.setContactNumber("9876543211");
-        try
-        {
+        try {
             user = this.userManager.saveUserManager(user);
-        }
-        catch (ApplicationException applicationException)
-        {
+        } catch (ApplicationException applicationException) {
             return applicationException.getExceptions().toString();
         }
         return "Saved : " + user.toString();
     }
 
     @ModelAttribute("roles")
-    public List<Role> initRoles()
-    {
+    public List<Role> initRoles() {
         System.out.print("\n\n\n INIT ROLE ");
         List<Role> roles = new ArrayList();
-        try
-        {
+        try {
             roles = this.roleManager.getAllRoles();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return roles;
     }
 
     @RequestMapping({"/login"})
-    public String loginPage()
-    {
+    public String loginPage() {
         if (isCurrentAuthenticationAnonymous()) {
             return "login";
         }
@@ -136,11 +122,9 @@ public class AuthenticationController {
     }
 
     @RequestMapping({"/logout"})
-    public String logoutPage(HttpServletRequest request, HttpServletResponse response)
-    {
+    public String logoutPage(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null)
-        {
+        if (auth != null) {
             this.tokenRepositoryService.logout(request, response, auth);
             SecurityContextHolder.getContext().setAuthentication(null);
         }
@@ -148,15 +132,13 @@ public class AuthenticationController {
     }
 
     @RequestMapping({"/Access_Denied"})
-    public String accessDeniedPage(HttpServletRequest request, HttpServletResponse response, ModelMap model)
-    {
+    public String accessDeniedPage(HttpServletRequest request, HttpServletResponse response, ModelMap model) {
         model.addAttribute("loggedUser", getPrincipal());
         return "accessDenied";
     }
 
     @RequestMapping({"/home"})
-    public String homePage(ModelMap model)
-    {
+    public String homePage(ModelMap model) {
         System.out.print("ACCESSING HOME PAGE");
         String username = getPrincipal();
         addUserDetails(username, model, null);
@@ -165,8 +147,7 @@ public class AuthenticationController {
     }
 
     @RequestMapping({"/oauth2/authorize"})
-    public String authorize(HttpServletRequest request, HttpServletResponse response, ModelMap model)
-    {
+    public String authorize(HttpServletRequest request, HttpServletResponse response, ModelMap model) {
         System.out.print("ACCESSING authorize PAGE");
         String username = getPrincipal();
         addUserDetails(username, model, request);
@@ -175,8 +156,7 @@ public class AuthenticationController {
     }
 
     @RequestMapping({"/oauth2/accessToken"})
-    public String accessToken(HttpServletRequest request, HttpServletResponse response, ModelMap model)
-    {
+    public String accessToken(HttpServletRequest request, HttpServletResponse response, ModelMap model) {
         System.out.print("ACCESSING authorize PAGE");
         String username = getPrincipal();
         addUserDetails(username, model, request);
@@ -185,8 +165,7 @@ public class AuthenticationController {
     }
 
     @RequestMapping({"/userInfo/manage"})
-    public String allUserData(ModelMap model)
-    {
+    public String allUserData(ModelMap model) {
         String username = getPrincipal();
         addUserDetails(username, model, null);
         return "/userInfo/allUserData";
@@ -194,94 +173,71 @@ public class AuthenticationController {
 
     @RequestMapping({"/userInfo/getAllUsers"})
     @ResponseBody
-    public String viewUserDetails()
-    {
-        try
-        {
+    public String viewUserDetails() {
+        try {
             List<User> users = this.userManager.getAllUsers();
             System.out.print("{data: [" + this.gson.toJson(users) + "]}");
             return this.gson.toJson(users);
-        }
-        catch (BusinessException b)
-        {
+        } catch (BusinessException b) {
             b.printStackTrace();
-        }
-        catch (ApplicationException a)
-        {
+        } catch (ApplicationException a) {
             a.printStackTrace();
         }
         return "[]";
     }
 
     @RequestMapping({"/ajax/viewUserDetails/{userId}"})
-    public String viewUserDetails(@PathVariable long userId, ModelMap model)
-    {
-        try
-        {
+    public String viewUserDetails(@PathVariable long userId, ModelMap model) {
+        try {
             User user = this.userManager.getUserById(userId);
             this.objectConstructor.populateFormDetails(user, model);
             System.out.print(model);
-        }
-        catch (BusinessException b)
-        {
+        } catch (BusinessException b) {
             b.printStackTrace();
-        }
-        catch (ApplicationException a)
-        {
+        } catch (ApplicationException a) {
             a.printStackTrace();
         }
         return "/ajax/userDetails";
     }
 
     @RequestMapping({"/ajax/updateUserDetails"})
-    public String saveUserDetails(HttpServletRequest request, ModelMap model)
-    {
+    public String saveUserDetails(HttpServletRequest request, ModelMap model) {
         System.out.print("Save User Details");
-        User user = (User)this.objectConstructor.constructObject(request, User.class);
-        try
-        {
+        User user = (User) this.objectConstructor.constructObject(request, User.class);
+        try {
             user = this.userManager.saveUserManager(user);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "redirect:/userInfo/manage";
     }
 
-    private String getPrincipal()
-    {
+    private String getPrincipal() {
         String userName = null;
-        try
-        {
+        try {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if ((principal instanceof UserDetails)) {
-                userName = ((UserDetails)principal).getUsername();
+                userName = ((UserDetails) principal).getUsername();
             } else {
                 userName = principal.toString();
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return userName;
     }
 
-    private boolean isCurrentAuthenticationAnonymous()
-    {
+    private boolean isCurrentAuthenticationAnonymous() {
         System.out.print("Check is Current auth.****************************************\n");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.print("After Check is Current auth.****************************************\n"+authentication.isAuthenticated()+" "+authentication.getDetails()+" "+authenticationTrustResolver.isAnonymous(authentication)) ;
+        System.out.print("After Check is Current auth.****************************************\n" + authentication.isAuthenticated() + " " + authentication.getDetails() + " " + authenticationTrustResolver.isAnonymous(authentication));
         return this.authenticationTrustResolver.isAnonymous(authentication);
     }
 
-    private User addUserDetails(String username, ModelMap modelMap,HttpServletRequest request)
-    {
+    private User addUserDetails(String username, ModelMap modelMap, HttpServletRequest request) {
         modelMap.put("loggedUser", username);
         User user = null;
-        try
-        {
+        try {
             user = userManager.getUserByUserName(username);
             modelMap.put("loggedUserEmail", user.getContactEmail());
             modelMap.put("loggedUserFullName", (user.getFirstName() != null ? user.getFirstName() + " " : "") + (user.getMiddleName() != null ? user.getMiddleName() + " " : "") + (user.getLastName() != null ? user.getLastName() : ""));
@@ -289,19 +245,25 @@ public class AuthenticationController {
             modelMap.put("loggedUserAuthority", user.getRole() != null ? user.getRole().getName() : "");
             modelMap.put("loggedUserId", Long.valueOf(user.getId()));
             modelMap.put("loggedPassword", user.getPassword());
-            if(request != null && request.getParameter("client_id") != null) {
-                modelMap.put("client_id",request.getParameter("client_id"));
+            if (request != null && request.getParameter("client_id") != null) {
+                modelMap.put("client_id", request.getParameter("client_id"));
             }
-            if(request != null && request.getParameter("client_secret") != null) {
-                modelMap.put("client_secret",request.getParameter("client_secret"));
+            if (request != null && request.getParameter("client_secret") != null) {
+                modelMap.put("client_secret", request.getParameter("client_secret"));
             }
-            if(request != null && request.getParameter("code") != null) {
-                modelMap.put("code",request.getParameter("code"));
+            if (request != null && request.getParameter("code") != null) {
+                modelMap.put("code", request.getParameter("code"));
             }
 
 
+
+        } catch (BusinessException b) {
+            b.printStackTrace();
+        } catch (ApplicationException a) {
+            a.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch (BusinessException b) {b.printStackTrace();}catch (ApplicationException a) {a.printStackTrace();} catch (Exception e) {e.printStackTrace();}
         return user;
     }
 }
